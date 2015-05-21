@@ -16,8 +16,8 @@
 #define IS_TANK
 
 new bool:g_bMapHasCustomSpawns = false;
-new g_iCustomTankSpawns = 0;
-new g_iCustomWitchSpawns = 0;
+new Float:g_TankPosition[3];
+new Float:g_WitchPosition[3];
 
 public Plugin:myinfo = 
 {
@@ -25,39 +25,33 @@ public Plugin:myinfo =
     author = "Jacob",
     description = "Allows for fully customizable boss spawns.",
     version = "0.1",
-    url = "github.com/jacob404/myplugins"
+    url = "zzz"
 }
 
 public OnMapStart()
 {
 	decl String:mapname[64];
-    GetCurrentMap(mapname, sizeof(mapname));
+	GetCurrentMap(mapname, sizeof(mapname));
 	if(g_bMapHasCustomSpawns)
 	{
-		block tank spawns
-		GetCustomSpawns(mapname);
-		ChooseCustomSpawn();
+		block vanilla tank spawns
+		ChooseCustomSpawn(mapname);
 		
 	}
 }
 
-
-public GetCustomSpawns(mapname)
-{
-	g_iCustomTankSpawns = ;
-	g_iCustomWitchSpawns = ;
-}
-
 public ChooseCustomSpawn()
 {
-	new TankSelection = GetRandomInt;
-	new Witch Selection = GetRandomInt;
+	new iTank = GetRandomInt;
+	new iWitch = GetRandomInt;
+	g_TankPosition = getvaluefromfile(iTank);
+	g_WitchPosition = getvaluefromfile(iWitch);
 }
 
 public CreateTankEntity()
 {
 	new TankEntity = CreateEntityByName("info_zombie_spawn");
-	decl Float:pos[3];
+	decl Float:pos[3] = g_TankPosition;
 	TeleportEntity(TankEntity, pos, NULL_VECTOR, NULL_VECTOR);
 	DispatchKeyValue(TankEntity, "targetname", "zombie_tank");
 	DispatchKeyValue(TankEntity, "population", "tank");
