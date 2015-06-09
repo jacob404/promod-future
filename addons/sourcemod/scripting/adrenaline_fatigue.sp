@@ -7,11 +7,6 @@
 #define IS_SURVIVOR(%1)         (GetClientTeam(%1) == 2)
 #define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
 #define IS_VALID_SURVIVOR(%1)   (IS_VALID_INGAME(%1) && IS_SURVIVOR(%1))
-#define IS_TANK
-
-new bool:g_bMapHasCustomSpawns = false;
-new g_iCustomTankSpawns = 0;
-new g_iCustomWitchSpawns = 0;
 
 public Plugin:myinfo = 
 {
@@ -59,6 +54,4 @@ public Action:RemoveDebuff(Handle:timer, any:client)
 	{
 	220
 	}
-
-	Increase fatigue
 }
