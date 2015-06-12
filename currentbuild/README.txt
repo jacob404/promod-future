@@ -1,3 +1,11 @@
+4.4
+- Players are no longer able to skip their death cam as infected to manipulate their spawn time and sac order. (Pro Mod and Reflux only)
+- Spawn timers reduced by 2 seconds in Pro Mod and Reflux.
+- Removed custom bonesaw effects. (I got more complaints about them than expected, contact me if you wanna talk about it)
+- Doors and breakable props can no longer be broken during readyup.
+- Updated readyup so that only the survivor who attempts to leave saferoom will be warped back, rather than the whole team.
+
+
 4.3.1
 General-
 

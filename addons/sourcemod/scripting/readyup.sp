@@ -913,13 +913,11 @@ public Action:killSound(Handle:timer)
 
 DisableEntities() {
   ActivateEntities("prop_door_rotating", "SetUnbreakable");
-  ActivateEntities("trigger_hurt_ghost", "Disable");
   MakePropsUnbreakable();
 }
 
 EnableEntities() {
   ActivateEntities("prop_door_rotating", "SetBreakable");
-  ActivateEntities("trigger_hurt_ghost", "Enable");
   MakePropsBreakable();
 }
 
