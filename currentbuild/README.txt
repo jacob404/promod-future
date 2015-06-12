@@ -4,6 +4,8 @@
 - Removed custom bonesaw effects. (I got more complaints about them than expected, contact me if you wanna talk about it)
 - Doors and breakable props can no longer be broken during readyup.
 - Updated readyup so that only the survivor who attempts to leave saferoom will be warped back, rather than the whole team.
+- Fixed melee weapons not being limited to 0 in Reflux.
+- Common infected will no longer fight each other.
 
 
 4.3.1
