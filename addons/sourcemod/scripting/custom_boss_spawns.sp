@@ -14,7 +14,8 @@
 #define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
 #define IS_VALID_SURVIVOR(%1)   (IS_VALID_INGAME(%1) && IS_SURVIVOR(%1))
 
-new TankPercent[5];
+new TankPercent[16];
+new TankChance[16];
 
 public Plugin:myinfo = 
 {
@@ -141,8 +142,8 @@ bool: KV_UpdateBossSpawnInfo()
 	if (KvJumpToKey(g_kBSData, mapname))
 	{
 		// TONS OF DATA
-		g_bCustomTankThisRound = bool: (KvGetNum(g_kBSData, "customtank", 0));
-		g_bCustomWitchThisRound = bool: (KvGetNum(g_kBSData, "customwitch", 0));
+		g_iCustomTanksThisRound = KvGetNum(g_kBSData, "customtanks", 0);
+		g_iCustomWitchesThisRound = KvGetNum(g_kBSData, "customwitches", 0);
 		
 		new TankPos1 = KvGetVector(g_kBSData, "tankpos1", 0 0 0);
 		new TankPercent1 = KvGetNum(g_kBSData, "tankpercent1", 0);
@@ -184,20 +185,28 @@ bool: KV_UpdateBossSpawnInfo()
 		new WitchPercent5 = KvGetNum(g_kBSData, "witchpercent5", 0);
 		new WitchChance5 = KvGetNum(g_kBSData, "witchchance5", 0);
 		
-		for(new i = 1, i++, i<=5){
-			new String:posholder[8] = "tankpos";
+		new TankChanceTotal;
+		
+		for(new i = 1, i++, i <= g_iCustomTanksThisRound){
+			new String:posholder[16] = "tankpos";
 			StrCat(posholder, sizeOf(posholder), IntToString(i));
 			array = KvGetVector(g_kBSData, posholder, 0 0 0);
 			
-			new String:percentholder[8] = "tankpercent";
+			new String:percentholder[16] = "tankpercent";
 			StrCat(percentholder, sizeOf(percentholder), IntToString(i));
 			TankPercent[i] = KvGetNum(g_kBSData, percentholder, 0);
+			
+			new String:chanceholder[16] = "tankchance";
+			StrCat(chanceholder, sizeOf(chanceholder), IntToString(i));
+			TankChance[i] = KvGetNum(g_kBSData, chanceholder, 0);
+			
+			TankChanceTotal += TankChance[i];
 		}
 		
 		new TankChanceTotal = (TankChance1 + TankChance2 + TankChance3 + TankChance4 + TankChance5);
 		new WitchChanceTotal = (WitchChance1 + WitchChance2 + WitchChance3 + WitchChance4 + WitchChance5);
         
-		if (g_bCustomTankThisRound)
+		if (g_CustomTanksThisRound != 0)
 		{
 			if(TankChanceTotal == 100){
 				new tankselection = GetRandomInt(1, 100);
