@@ -16,6 +16,10 @@
 
 new TankPercent[16];
 new TankChance[16];
+new g_iCustomTanksThisRound;
+new WitchPercent[16];
+new WitchChance[16];
+new g_iCustomWitchesThisRound;
 
 public Plugin:myinfo = 
 {
@@ -72,13 +76,13 @@ public OnMapStart()
 {
 	KV_UpdateBossSpawnInfo();
 	
-	if(g_bCustomTankThisRound)
+	if(g_iCustomTankThisRound != 0)
 	{
 		block vanilla tank spawns
 		CreateTankEntity();
 	}
 	
-	else if(g_bCustomWitchThisRound)
+	else if(g_iCustomWitchThisRound != 0)
 	{
 		block vanilla witch spawns
 		CreateWitchEntity();
@@ -134,6 +138,9 @@ KV_Load()
 
 bool: KV_UpdateBossSpawnInfo()
 {
+	g_iCustomTanksThisRound = 0;
+	g_iCustomWitchesThisRound = 0;
+	
 	if (g_kBSData == INVALID_HANDLE) {return false;}
     
 	new String: mapname[64];
@@ -144,46 +151,6 @@ bool: KV_UpdateBossSpawnInfo()
 		// TONS OF DATA
 		g_iCustomTanksThisRound = KvGetNum(g_kBSData, "customtanks", 0);
 		g_iCustomWitchesThisRound = KvGetNum(g_kBSData, "customwitches", 0);
-		
-		new TankPos1 = KvGetVector(g_kBSData, "tankpos1", 0 0 0);
-		new TankPercent1 = KvGetNum(g_kBSData, "tankpercent1", 0);
-		new TankChance1 = KvGetNum(g_kBSData, "tankchance1", 0);
-		
-		new TankPos2 = KvGetVector(g_kBSData, "tankpos2", 0 0 0);
-		new TankPercent2 = KvGetNum(g_kBSData, "tankpercent2", 0);
-		new TankChance2 = KvGetNum(g_kBSData, "tankchance2", 0);
-		
-		new TankPos3 = KvGetVector(g_kBSData, "tankpos3", 0 0 0);
-		new TankPercent3 = KvGetNum(g_kBSData, "tankpercent3", 0);
-		new TankChance3 = KvGetNum(g_kBSData, "tankchance3", 0);
-		
-		new TankPos4 = KvGetVector(g_kBSData, "tankpos4", 0 0 0);
-		new TankPercent4 = KvGetNum(g_kBSData, "tankpercent4", 0);
-		new TankChance4 = KvGetNum(g_kBSData, "tankchance4", 0);
-		
-		new TankPos5 = KvGetVector(g_kBSData, "tankpos5", 0 0 0);
-		new TankPercent5 = KvGetNum(g_kBSData, "tankpercent5", 0);
-		new TankChance5 = KvGetNum(g_kBSData, "tankchance5", 0);
-		
-		new WitchPos1 = KvGetVector(g_kBSData, "witchpos1", 0 0 0);
-		new WitchPercent1 = KvGetNum(g_kBSData, "witchpercent1", 0);
-		new WitchChance1 = KvGetNum(g_kBSData, "witchchance1", 0);
-		
-		new WitchPos2 = KvGetVector(g_kBSData, "witchpos2", 0 0 0);
-		new WitchPercent2 = KvGetNum(g_kBSData, "witchpercent2", 0);
-		new WitchChance2 = KvGetNum(g_kBSData, "witchchance2", 0);
-		
-		new WitchPos3 = KvGetVector(g_kBSData, "witchpos3", 0 0 0);
-		new WitchPercent3 = KvGetNum(g_kBSData, "witchpercent3", 0);
-		new WitchChance3 = KvGetNum(g_kBSData, "witchchance3", 0);
-		
-		new WitchPos4 = KvGetVector(g_kBSData, "witchpos4", 0 0 0);
-		new WitchPercent4 = KvGetNum(g_kBSData, "witchpercent4", 0);
-		new WitchChance4 = KvGetNum(g_kBSData, "witchchance4", 0);
-		
-		new WitchPos5 = KvGetVector(g_kBSData, "witchpos5", 0 0 0);
-		new WitchPercent5 = KvGetNum(g_kBSData, "witchpercent5", 0);
-		new WitchChance5 = KvGetNum(g_kBSData, "witchchance5", 0);
 		
 		new TankChanceTotal;
 		
@@ -203,10 +170,26 @@ bool: KV_UpdateBossSpawnInfo()
 			TankChanceTotal += TankChance[i];
 		}
 		
-		new TankChanceTotal = (TankChance1 + TankChance2 + TankChance3 + TankChance4 + TankChance5);
-		new WitchChanceTotal = (WitchChance1 + WitchChance2 + WitchChance3 + WitchChance4 + WitchChance5);
+		new WitchChanceTotal;
+		
+		for(new i = 1, i++, i <= g_iCustomWitchesThisRound){
+			new String:posholder[16] = "witchpos";
+			StrCat(posholder, sizeOf(posholder), IntToString(i));
+			array = KvGetVector(g_kBSData, posholder, 0 0 0);
+			
+			new String:percentholder[16] = "witchpercent";
+			StrCat(percentholder, sizeOf(percentholder), IntToString(i));
+			WitchPercent[i] = KvGetNum(g_kBSData, percentholder, 0);
+			
+			new String:chanceholder[16] = "witchchance";
+			StrCat(chanceholder, sizeOf(chanceholder), IntToString(i));
+			WitchChance[i] = KvGetNum(g_kBSData, chanceholder, 0);
+			
+			WitchChanceTotal += WitchChance[i];
+		}
+		
         
-		if (g_CustomTanksThisRound != 0)
+		if (g_iCustomTanksThisRound != 0)
 		{
 			if(TankChanceTotal == 100){
 				new tankselection = GetRandomInt(1, 100);
@@ -254,7 +237,7 @@ bool: KV_UpdateBossSpawnInfo()
 			
         }
 		
-		if (g_bCustomWitchThisRound)
+		if (g_iCustomWitchesThisRound != 0)
 		{
 			
 		}
