@@ -14,6 +14,8 @@
 #define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
 #define IS_VALID_SURVIVOR(%1)   (IS_VALID_INGAME(%1) && IS_SURVIVOR(%1))
 
+new TankPercent[5];
+
 public Plugin:myinfo = 
 {
     name = "Custom Boss Spawns",
@@ -131,22 +133,13 @@ KV_Load()
 
 bool: KV_UpdateBossSpawnInfo()
 {
-	g_bCustomTank = false;
-	g_bCustomWitch = false;
-	g_vTankPos1 = "0 0 0";
-	g_iTankPercent1 = 0;
-	g_iTankChance1 = 0;
-	g_vWitchPos1 = "0 0 0";
-	g_iWitchPercent1 = 0;
-	g_iWitchChance1 = 0;
-	
-    if (g_kBSData == INVALID_HANDLE) {return false;}
+	if (g_kBSData == INVALID_HANDLE) {return false;}
     
-    new String: mapname[64];
-    GetCurrentMap(mapname, sizeof(mapname));
+	new String: mapname[64];
+	GetCurrentMap(mapname, sizeof(mapname));
     
-    if (KvJumpToKey(g_kBSData, mapname))
-    {
+	if (KvJumpToKey(g_kBSData, mapname))
+	{
 		// TONS OF DATA
 		g_bCustomTankThisRound = bool: (KvGetNum(g_kBSData, "customtank", 0));
 		g_bCustomWitchThisRound = bool: (KvGetNum(g_kBSData, "customwitch", 0));
@@ -190,6 +183,16 @@ bool: KV_UpdateBossSpawnInfo()
 		new WitchPos5 = KvGetVector(g_kBSData, "witchpos5", 0 0 0);
 		new WitchPercent5 = KvGetNum(g_kBSData, "witchpercent5", 0);
 		new WitchChance5 = KvGetNum(g_kBSData, "witchchance5", 0);
+		
+		for(new i = 1, i++, i<=5){
+			new String:posholder[8] = "tankpos";
+			StrCat(posholder, sizeOf(posholder), IntToString(i));
+			array = KvGetVector(g_kBSData, posholder, 0 0 0);
+			
+			new String:percentholder[8] = "tankpercent";
+			StrCat(percentholder, sizeOf(percentholder), IntToString(i));
+			TankPercent[i] = KvGetNum(g_kBSData, percentholder, 0);
+		}
 		
 		new TankChanceTotal = (TankChance1 + TankChance2 + TankChance3 + TankChance4 + TankChance5);
 		new WitchChanceTotal = (WitchChance1 + WitchChance2 + WitchChance3 + WitchChance4 + WitchChance5);
