@@ -159,7 +159,11 @@ bool: KV_UpdateBossSpawnInfo()
 		g_iCustomWitchesThisRound = KvGetNum(g_kBSData, "customwitches", 0);
 		
 		new TankChanceTotal;
+		new TankSelection = GetRandomInt(1, 100);
+		new WitchChanceTotal;
+		new WitchSelection = GetRandomInt(1, 100);
 		
+		// TANKS
 		for(new i = 1, i++, i <= g_iCustomTanksThisRound){
 			new arnum = i - 1;
 		
@@ -178,8 +182,6 @@ bool: KV_UpdateBossSpawnInfo()
 			
 			TankChanceTotal += TankChance[i];
 		}
-		
-		new TankSelection = GetRandomInt(1, 100);
 		
 		if(TankChanceTotal > 100){
 			PrintToServer("Tank chance greater than 100. Something is wrong!");
@@ -200,8 +202,8 @@ bool: KV_UpdateBossSpawnInfo()
 			TankChance[i] += TankChance[arnum];
 		}
 		
-		new WitchChanceTotal;
 		
+		// WITCHES
 		for(new i = 1, i++, i <= g_iCustomWitchesThisRound){
 			new arnum = i - 1;
 		
@@ -220,8 +222,6 @@ bool: KV_UpdateBossSpawnInfo()
 			
 			WitchChanceTotal += WitchChance[i];
 		}
-		
-		new WitchSelection = GetRandomInt(1, 100);
 		
 		if(WitchChanceTotal > 100){
 			PrintToServer("Witch chance greater than 100. Something is wrong!");
