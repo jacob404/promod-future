@@ -20,6 +20,10 @@ new g_iCustomTanksThisRound;
 new WitchPercent[16];
 new WitchChance[16];
 new g_iCustomWitchesThisRound;
+new g_iTankPercent;
+new g_vTankPosition[3];
+new g_iWitchPercent;
+new g_vWitchPosition[3];
 
 public Plugin:myinfo = 
 {
@@ -39,7 +43,8 @@ public OnPluginStart()
         );
     
     HookConVarChange(g_hCvarKeyValuesPath, ConvarChange_KeyValuesPath);
-    
+    aTankPos = CreateArray(32);
+	aWitchPos = CreateArray(32);
 }
 
 public OnPluginEnd()
@@ -82,7 +87,7 @@ public OnMapStart()
 		CreateTankEntity();
 	}
 	
-	else if(g_iCustomWitchThisRound != 0)
+	if(g_iCustomWitchThisRound != 0)
 	{
 		block vanilla witch spawns
 		CreateWitchEntity();
@@ -92,7 +97,7 @@ public OnMapStart()
 public CreateTankEntity()
 {
 	new TankEntity = CreateEntityByName("info_zombie_spawn");
-	decl Float:pos[3] = g_vTankPos;
+	decl Float:pos[3] = g_vTankPosition;
 	TeleportEntity(TankEntity, pos, NULL_VECTOR, NULL_VECTOR);
 	DispatchKeyValue(TankEntity, "targetname", "zombie_tank");
 	DispatchKeyValue(TankEntity, "population", "tank");
@@ -138,6 +143,8 @@ KV_Load()
 
 bool: KV_UpdateBossSpawnInfo()
 {
+	ClearArray(aTankPos);
+	ClearArray(aWitchPos);
 	g_iCustomTanksThisRound = 0;
 	g_iCustomWitchesThisRound = 0;
 	
@@ -148,16 +155,18 @@ bool: KV_UpdateBossSpawnInfo()
     
 	if (KvJumpToKey(g_kBSData, mapname))
 	{
-		// TONS OF DATA
 		g_iCustomTanksThisRound = KvGetNum(g_kBSData, "customtanks", 0);
 		g_iCustomWitchesThisRound = KvGetNum(g_kBSData, "customwitches", 0);
 		
 		new TankChanceTotal;
 		
 		for(new i = 1, i++, i <= g_iCustomTanksThisRound){
+			new arnum = i - 1;
+		
 			new String:posholder[16] = "tankpos";
 			StrCat(posholder, sizeOf(posholder), IntToString(i));
-			array = KvGetVector(g_kBSData, posholder, 0 0 0);
+			new posvec[3] = KvGetVector(g_kBSData, posholder, 0 0 0);
+			SetArrayArray(aTankPos, arnum, posvec);
 			
 			new String:percentholder[16] = "tankpercent";
 			StrCat(percentholder, sizeOf(percentholder), IntToString(i));
@@ -170,12 +179,36 @@ bool: KV_UpdateBossSpawnInfo()
 			TankChanceTotal += TankChance[i];
 		}
 		
+		new TankSelection = GetRandomInt(1, 100);
+		
+		if(TankChanceTotal > 100){
+			PrintToServer("Tank chance greater than 100. Something is wrong!");
+		}
+		
+		else if(TankChanceTotal < 100){
+			PrintToServer("Tank chance less than 100. Something is wrong!");
+			new missingnum = 100 - TankChanceTotal;
+			TankChance[1] += missingnum;
+		}
+
+		for(new i = 1, i++, i <= g_iCustomTanksThisRound){
+			new arnum = i - 1;
+			if(TankSelection <= TankChance[i]){
+				g_iTankPercent = TankPercent[i];
+				GetArrayArray(aTankPos, arnum, g_vTankPosition);
+			}
+			TankChance[i] += TankChance[arnum];
+		}
+		
 		new WitchChanceTotal;
 		
 		for(new i = 1, i++, i <= g_iCustomWitchesThisRound){
+			new arnum = i - 1;
+		
 			new String:posholder[16] = "witchpos";
 			StrCat(posholder, sizeOf(posholder), IntToString(i));
-			array = KvGetVector(g_kBSData, posholder, 0 0 0);
+			new posvec[3] = KvGetVector(g_kBSData, posholder, 0 0 0);
+			SetArrayArray(aWitchPos, arnum, posvec);
 			
 			new String:percentholder[16] = "witchpercent";
 			StrCat(percentholder, sizeOf(percentholder), IntToString(i));
@@ -188,62 +221,29 @@ bool: KV_UpdateBossSpawnInfo()
 			WitchChanceTotal += WitchChance[i];
 		}
 		
-        
-		if (g_iCustomTanksThisRound != 0)
-		{
-			if(TankChanceTotal == 100){
-				new tankselection = GetRandomInt(1, 100);
-				new temptankchance2 = TankChance1 + TankChance2;
-				new temptankchance3 = temptankchance2 + TankChance3;
-				new temptankchance4 = temptankchance3 + TankChance4;
-				new temptankchance5 = temptankchance4 + TankChance5;
-				
-				if(tankselection <= TankChance1){
-					g_iTankPercent = TankPercent1;
-					g_vTankPos = TankPos1;
-				}
-				
-				else if(tankselection <= temptankchance2){
-					g_iTankPercent = TankPercent2;
-					g_vTankPos = TankPos2;
-				}
-				
-				else if(tankselection <= temptankchance3){
-					g_iTankPercent = TankPercent3;
-					g_vTankPos = TankPos3;
-				}
-				
-				else if(tankselection <= temptankchance4){
-					g_iTankPercent = TankPercent4;
-					g_vTankPos = TankPos4;
-				}
-				
-				else if(tankselection <= temptankchance5){
-					g_iTankPercent = TankPercent5;
-					g_vTankPos = TankPos5;
-				}
-			}
-			
-			else if(TankChanceTotal > 100){
-				PrintToServer("Tank chance greater than 100! Someone messed up!");
-			}
-			
-			else{
-				new tempnum = 100;
-				new missingnum = tempnum - TankChanceTotal;
-				TankChance1 += missingnum;
-				PrintToServer("Tank chance less than 100! Adding missing chance to tank 1");
-			}
-			
-        }
+		new WitchSelection = GetRandomInt(1, 100);
 		
-		if (g_iCustomWitchesThisRound != 0)
-		{
-			
+		if(WitchChanceTotal > 100){
+			PrintToServer("Witch chance greater than 100. Something is wrong!");
+		}
+		
+		else if(WitchChanceTotal < 100){
+			PrintToServer("Witch chance less than 100. Something is wrong!");
+			new missingnum = 100 - WitchChanceTotal;
+			WitchChance[1] += missingnum;
 		}
 
+		for(new i = 1, i++, i <= g_iCustomWitchesThisRound){
+			new arnum = i - 1;
+			if(WitchSelection <= WitchChance[i]){
+				g_iWitchPercent = WitchPercent[i];
+				GetArrayArray(aWitchPos, arnum, g_vWitchPosition);
+			}
+			WitchChance[i] += WitchChance[arnum];
+		}
+		
 		return true;
 	}
-    
+	
 	return false;
 }
