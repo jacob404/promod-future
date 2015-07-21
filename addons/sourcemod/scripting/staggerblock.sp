@@ -1,17 +1,44 @@
 #include <sourcemod>
+#include <sdkhooks>
 #include <sdktools>
 #include <left4downtown>
-#undef REQUIRE_PLUGIN
-#include <pause>
+#include <l4d2util>
 
-new Handle:hStaggerBlockedClients = INVALID_HANDLE;
-new Handle:hCvarStaggerBlockTime = INVALID_HANDLE;
-new Float:lastPauseTime;
+/*
+Could probably do away with the trie but for now it works
+Place client into the trie on the following events
+    pounce_stopped
+    charger_pummel_end
+    charger_carry_end
+    Hook into SDKHooks(OnPreThink)
+*/
+
+/*
+OnPreThink
+    if (animation state is getting up)
+        do nothing
+    else
+        remove player from trie, and UnhookSDKHook(OnPreThink)
+*/
+
+/*
+OnStagger
+    If target in trie
+        if source is hunter/jockey
+            cancel stagger
+*/
 
 new bool:testdebug = true;
 
-//Not using Sourcemod timers because pausing the game with the pause plugin does not stop the server ticks.
-//Need to see what pounce things get called when a boomer esplodes next to a pounced survivor
+new Handle:hStaggerBlockedTrie = INVALID_HANDLE;
+
+//Courtesy of the l4d2_getupfix plugin
+new const getUpAnimations[SurvivorCharacter][4] = {    
+    // 0: Coach, 1: Nick, 2: Rochelle, 3: Ellis
+    {621, 656, 660, 661}, {620, 667, 671, 672}, {629, 674, 678, 679}, {625, 671, 675, 676},
+    // 4: Louis, 5: Zoey, 6: Bill, 7: Francis
+    {528, 759, 763, 764}, {537, 819, 823, 824}, {528, 759, 763, 764}, {531, 762, 766, 767}
+};
 
 public Plugin:myinfo =
 {
@@ -24,200 +51,107 @@ public Plugin:myinfo =
 
 public OnPluginStart() 
 {
-    HookEvent("pounce_stopped", Event_PounceStopped); //There's also a pounce_end event, will have to check what the difference is
-    HookEvent("charger_pummel_end", Event_PummelEnd);
-
-    //Called when a Bot replaces a Player. (Disconnects?)
-    HookEvent("player_bot_replace", Event_PlayerBotReplace);
-    //Called when a Player replaces a Bot. (Connection?)
-    HookEvent("bot_player_replace", Event_BotPlayerReplace)
+    HookEvent("pounce_stopped", Event_PounceChargeEnd); //There's also a pounce_end event, will have to check what the difference is, pounce end does some wierd shit D:
+    HookEvent("charger_pummel_end", Event_PounceChargeEnd);
+    HookEvent("charger_carry_end", Event_PounceChargeEnd);
     
-    HookEvent("versus_round_start", Event_VersusRoundStart);
-    HookEvent("player_death", Event_PlayerDeath);
+    hStaggerBlockedTrie = CreateTrie();
     
-    hCvarStaggerBlockTime = CreateConVar("stagger_block_time", "1.2", "How long are survivors immune to stagger?", FCVAR_PLUGIN, true, 0.0);
-    hStaggerBlockedClients = CreateTrie();
+    if (testdebug) 
+        PrintToChatAll("[StaggerBlockv2] Loaded");
 }
 
-
-//Will deal with pauses and unpauses later once everything else is working
-public OnUnpause()
+public OnPluginEnd()
 {
-    //Do stuff for unpause
+    CloseHandle(hStaggerBlockedTrie);
 }
 
-public OnPause()
+public Action:Event_PounceChargeEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    //Do stuff for pause
-}
-
-
-public Action:Event_VersusRoundStart (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    ClearTrie(hStaggerBlockedClients);
-}
-
-public Action:Event_PlayerDeath (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    new userid = GetEventInt(event, "userid");
+    new victimid = GetEventInt(event, "victim");
+    new client = GetClientOfUserId(victimid);
     
-    if (IsStaggerBlocked(userid)) 
+    new SurvivorCharacter:charIndex = IdentifySurvivor(client);
+    if (charIndex == SC_NONE) 
+        return;
+        
+    decl String:charName[8];
+    GetSurvivorName(charIndex, charName, sizeof(charName));
+        
+    SetTrieValue(hStaggerBlockedTrie, charName, true); //Add client to stagger blocked
+    CreateTimer(0.1, HookOnPostThink, client); //Wait a moment so they're in getup animation
+    
+    if (testdebug) 
+        PrintToChatAll("[StaggerBlockv2] %s added to trie", charName);
+}
+
+public Action:HookOnPostThink(Handle:timer, any:client)
+{
+    SDKHook(client, SDKHook_PostThink, OnPostThink);
+}
+
+//Using on post think because of possible pauses
+//Probably not very efficient
+public OnPostThink(client)
+{
+    new SurvivorCharacter:charIndex = IdentifySurvivor(client);
+    if (charIndex == SC_NONE) 
+        return;
+    
+    decl String:charName[8];
+    GetSurvivorName(charIndex, charName, sizeof(charName));
+    
+    new sequence = GetEntProp(client, Prop_Send, "m_nSequence");
+    
+    if (sequence != getUpAnimations[charIndex][0] && sequence != getUpAnimations[charIndex][1] && sequence != getUpAnimations[charIndex][2] && sequence != getUpAnimations[charIndex][3])
     {
-        RemoveFromStaggerBlocked(userid);
+        if (testdebug)
+            PrintToChatAll("[StaggerBlockv2] %s is no longer stagger immune", charName);
+        RemoveFromTrie(hStaggerBlockedTrie, charName);
+        SDKUnhook(client, SDKHook_PostThink, OnPostThink);
     }
 }
 
-//Called when a Bot replaces a Player. (Disconnects?)
-public Action:Event_PlayerBotReplace (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    /*
-    if player being replaced is in trie
-        remove the entry with the player id as the key
-        add entry with bot id as key, and use previous immuneUntil time
-    */
-}
-
-//Called when a Player replaces a Bot. (Connection?)
-public Action:Event_BotPlayerReplace (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    /*
-    if bot being replaced is in trie
-        remove the entry with the bot id as the key
-        add entry with player id as key, and use previous immuneUntil time
-    */
-}
-
-public Action:Event_PounceStopped (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    //Put a check here to see if the player is actually incapped, in which case we don't want to add them to stagger blocked
-    //Doesnt really matter but I still want it there.
-    
-    if (testdebug)
-        PrintToChatAll("Pounce stopped");
-    
-    new victimid = GetEventInt(event, "victim");
-    AddToStaggerBlocked(victimid);
-}
-
-public Action:Event_PummelEnd (Handle:event, const String:name[], bool:dontBroadcast)
-{
-    //Put a check here to see if the player is actually incapped, in which case we don't want to add them to stagger blocked
-    //Doesnt really matter but I still want it there.
-        
-    new victimid = GetEventInt(event, "victim");
-    AddToStaggerBlocked(victimid);
-}
-
-//Maybe instead of checking on think, just check OnStagger and if it's been more than 1.2 seconds since last stagger then remove from Trie
-//and on pounce/charge clear just update the time at which they were incapped
 public Action:L4D2_OnStagger(target, source) 
 {
-    //if source is infected (hunter/jockey)
-        if (IsSurvivor(target))
-        {
-            //If we use a Trie
-            decl String:strClient[10];
-            IntToString(target, strClient, sizeof(strClient));
-            new Float:immuneUntil;
-            new Float:currentTime;
-            new Float:staggerBlockTime;
-            
-            if (GetTrieValue(hStaggerBlockedClients, strClient, immuneUntil))
-            {   
-                if (testdebug)
-                        PrintToChatAll("%i is in the trie", target);
-                staggerBlockTime = GetConVarFloat(hCvarStaggerBlockTime);
-                immuneUntil += staggerBlockTime;
-                currentTime = GetGameTime();
-                
-                if (testdebug)
-                        PrintToChatAll("%i is immuneUntil %f", target, immuneUntil);
-                
-                if (immuneUntil >= currentTime)
-                {
-                    if (testdebug)
-                        PrintToChatAll("Blocking stagger for %i", target);
-                    return Plugin_Handled; //Block the Stagger
-                }
-                else 
-                {
-                    if (testdebug)
-                        PrintToChatAll("Removing %i from the trie", target);
-                    //Not sure if there's any point in removing them here other than to keep the trie small which is always good
-                    RemoveFromStaggerBlocked(target);
-                }
-            } else {
-                if (testdebug)
-                    PrintToChatAll("Staggering %i", target);
-            }
-        }
-
-            //If we use an adt_array
-            //probably won't
-    
-    return Plugin_Continue;
-}
-
-/*
-public Float:GetImmuneTime(userid)
-{
-    new client = GetClientOfUserId(userid);
-    decl String:strClient[10];
-    IntToString(client, strClient, sizeof(strClient));
-    new Float:value;
-    
-    if (GetTrieValue(hStaggerBlockedClients, strClient, value))
+    new L4D2_Infected:sourceClass = GetInfectedClass(source);
+    if (IsInfected(source) && sourceClass == L4D2Infected_Hunter && sourceClass == L4D2Infected_Jockey) //Still need to check if Jockey/Hunter
     {
-        return value;
-    } 
-    else 
-    {
-        return -1.0;
-    }
-}
-*/
-
-public GetClientId(userid)
-{
-    new client = userid;
-    
-    if (userid > MaxClients) 
-    {
-        client = GetClientOfUserId(userid);
-    } 
-    
-    return client;
-}
-
-public bool:IsStaggerBlocked(userid) 
-{
-    decl String:strClient[10];
-    new client = GetClientId(userid);
-    IntToString(client, strClient, sizeof(strClient));
+        new SurvivorCharacter:charIndex = IdentifySurvivor(target);
+        if (charIndex == SC_NONE) 
+            return Plugin_Continue;
         
-    new Float:value;
-    
-    return GetTrieValue(hStaggerBlockedClients, strClient, value);
-}
-
-public RemoveFromStaggerBlocked(userid)
-{
-    decl String:strClient[10];
-    new client = GetClientId(userid);
-    IntToString(client, strClient, sizeof(strClient));
-    
-    RemoveFromTrie(hStaggerBlockedClients, strClient);
-}
-
-public AddToStaggerBlocked(userid)
-{
-    decl String:strClient[10];
-    new client = GetClientId(userid);
-    IntToString(client, strClient, sizeof(strClient));
-    new Float:currentTime = GetGameTime() //Game time increases while paused, fix the values in the OnUnpause
-    
-    SetTrieValue(hStaggerBlockedClients, strClient, currentTime);
-    
-    if (testdebug)
-        PrintToChatAll("%s id was added to hStaggerBlocked with current time %f", strClient, currentTime);
+        decl String:charName[8];
+        GetSurvivorName(charIndex, charName, sizeof(charName));
+        
+        new bool:staggerBlocked = false;
+        
+        if (GetTrieValue(hStaggerBlockedTrie, charName, staggerBlocked)) 
+        {
+            if (testdebug)
+                PrintToChatAll("[StaggerBlockv2] Blocking stagger for %s", charName);
+            return Plugin_Handled; //Block the Stagger
+        }
+        else //Not needed, debug purposes
+        {
+            if (testdebug)
+                PrintToChatAll("[StaggerBlockv2] Staggering %s", charName);
+        }
+    }
+    else
+    {
+        decl String:className[64];
+        GetInfectedClassName(sourceClass, className, sizeof(className));
+        
+        new SurvivorCharacter:charIndex = IdentifySurvivor(target);
+        if (charIndex == SC_NONE) 
+            return Plugin_Continue;
+        
+        decl String:charName[8];
+        GetSurvivorName(charIndex, charName, sizeof(charName));
+        
+        if (testdebug)
+                PrintToChatAll("[StaggerBlockv2] Staggering %s, source was %s", charName, className);
+    }
+    return Plugin_Continue;
 }
