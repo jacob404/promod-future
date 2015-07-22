@@ -10,15 +10,15 @@ Place client into the trie on the following events
     pounce_stopped
     charger_pummel_end
     charger_carry_end
-    Hook into SDKHooks(OnPreThink)
+    SDKHook(OnThink)
 */
 
 /*
-OnPreThink
+OnThink
     if (animation state is getting up)
         do nothing
     else
-        remove player from trie, and UnhookSDKHook(OnPreThink)
+        remove player from trie, and SDKUnhook(OnThink)
 */
 
 /*
@@ -27,8 +27,6 @@ OnStagger
         if source is hunter/jockey
             cancel stagger
 */
-
-new bool:testdebug = true;
 
 new Handle:hStaggerBlockedTrie = INVALID_HANDLE;
 
@@ -55,10 +53,24 @@ public OnPluginStart()
     HookEvent("charger_pummel_end", Event_PounceChargeEnd);
     HookEvent("charger_carry_end", Event_PounceChargeEnd);
     
+    //Don't care about what happens when a bot replaces a player and vice versa, since they immediately get up out of the animation when they join/disconnect
+    
+    HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+    
     hStaggerBlockedTrie = CreateTrie();
     
-    if (testdebug) 
-        PrintToChatAll("[StaggerBlockv2] Loaded");
+    PrintToChatAll("[StaggerBlockv2] Has been loaded");
+    PrintToServer("[StaggerBlockv2] Has been loaded");
+}
+
+public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    ClearTrie(hStaggerBlockedTrie);
+}
+
+public OnMapEnd()
+{
+    ClearTrie(hStaggerBlockedTrie);
 }
 
 public OnPluginEnd()
@@ -68,8 +80,7 @@ public OnPluginEnd()
 
 public Action:Event_PounceChargeEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    new victimid = GetEventInt(event, "victim");
-    new client = GetClientOfUserId(victimid);
+    new client = GetClientOfUserId(GetEventInt(event, "victim"));
     
     new SurvivorCharacter:charIndex = IdentifySurvivor(client);
     if (charIndex == SC_NONE) 
@@ -78,21 +89,20 @@ public Action:Event_PounceChargeEnd(Handle:event, const String:name[], bool:dont
     decl String:charName[8];
     GetSurvivorName(charIndex, charName, sizeof(charName));
         
-    SetTrieValue(hStaggerBlockedTrie, charName, true); //Add client to stagger blocked
-    CreateTimer(0.1, HookOnPostThink, client); //Wait a moment so they're in getup animation
+    SetTrieValue(hStaggerBlockedTrie, charName, true); //Add survivor to stagger blocked
+    CreateTimer(0.1, HookOnThink, client); //Wait a moment so they're in getup animation
     
-    if (testdebug) 
-        PrintToChatAll("[StaggerBlockv2] %s added to trie", charName);
+    PrintToChatAll("[StaggerBlockv2] %s is now stagger immune", charName);
+    PrintToServer("[StaggerBlockv2] %s is now stagger immune", charName);
 }
 
-public Action:HookOnPostThink(Handle:timer, any:client)
+public Action:HookOnThink(Handle:timer, any:client)
 {
-    SDKHook(client, SDKHook_PostThink, OnPostThink);
+    SDKHook(client, SDKHook_PostThink, OnThink);
 }
 
-//Using on post think because of possible pauses
-//Probably not very efficient
-public OnPostThink(client)
+//Using on think think because of possible pauses, must automatically unhook when player disconnects, did tests this seems to be the case
+public OnThink(client)
 {
     new SurvivorCharacter:charIndex = IdentifySurvivor(client);
     if (charIndex == SC_NONE) 
@@ -105,53 +115,56 @@ public OnPostThink(client)
     
     if (sequence != getUpAnimations[charIndex][0] && sequence != getUpAnimations[charIndex][1] && sequence != getUpAnimations[charIndex][2] && sequence != getUpAnimations[charIndex][3])
     {
-        if (testdebug)
-            PrintToChatAll("[StaggerBlockv2] %s is no longer stagger immune", charName);
+        PrintToChatAll("[StaggerBlockv2] %s is no longer stagger immune", charName);
+        PrintToServer("[StaggerBlockv2] %s is no longer stagger immune", charName);
         RemoveFromTrie(hStaggerBlockedTrie, charName);
-        SDKUnhook(client, SDKHook_PostThink, OnPostThink);
+        SDKUnhook(client, SDKHook_PostThink, OnThink);
     }
 }
 
 public Action:L4D2_OnStagger(target, source) 
 {
-    new L4D2_Infected:sourceClass = GetInfectedClass(source);
-    if (IsInfected(source) && sourceClass == L4D2Infected_Hunter && sourceClass == L4D2Infected_Jockey) //Still need to check if Jockey/Hunter
+    if (IsInfected(source))
     {
-        new SurvivorCharacter:charIndex = IdentifySurvivor(target);
-        if (charIndex == SC_NONE) 
-            return Plugin_Continue;
-        
-        decl String:charName[8];
-        GetSurvivorName(charIndex, charName, sizeof(charName));
-        
-        new bool:staggerBlocked = false;
-        
-        if (GetTrieValue(hStaggerBlockedTrie, charName, staggerBlocked)) 
-        {
-            if (testdebug)
-                PrintToChatAll("[StaggerBlockv2] Blocking stagger for %s", charName);
-            return Plugin_Handled; //Block the Stagger
-        }
-        else //Not needed, debug purposes
-        {
-            if (testdebug)
-                PrintToChatAll("[StaggerBlockv2] Staggering %s", charName);
-        }
-    }
-    else
-    {
+        new L4D2_Infected:sourceClass = GetInfectedClass(source);
         decl String:className[64];
         GetInfectedClassName(sourceClass, className, sizeof(className));
         
-        new SurvivorCharacter:charIndex = IdentifySurvivor(target);
-        if (charIndex == SC_NONE) 
-            return Plugin_Continue;
-        
-        decl String:charName[8];
-        GetSurvivorName(charIndex, charName, sizeof(charName));
-        
-        if (testdebug)
-                PrintToChatAll("[StaggerBlockv2] Staggering %s, source was %s", charName, className);
+        if (IsInfected(source) && (sourceClass == L4D2Infected_Hunter || sourceClass == L4D2Infected_Jockey)) //Still need to check if Jockey/Hunter
+        {
+            new SurvivorCharacter:charIndex = IdentifySurvivor(target);
+            if (charIndex == SC_NONE) 
+                return Plugin_Continue;
+            
+            decl String:charName[8];
+            GetSurvivorName(charIndex, charName, sizeof(charName));
+            
+            new bool:staggerBlocked = false;
+            
+            if (GetTrieValue(hStaggerBlockedTrie, charName, staggerBlocked)) 
+            {
+                PrintToChatAll("[StaggerBlockv2] Blocking stagger on %s, source: %s", charName, className);
+                PrintToServer("[StaggerBlockv2] Blocking stagger on %s, source: %s", charName, className);
+                return Plugin_Handled;
+            }
+            else //Not needed, debug purposes
+            {
+                PrintToChatAll("[StaggerBlockv2] Staggering %s, source: %s", charName, className);
+                PrintToServer("[StaggerBlockv2] Staggering %s, source: %s", charName, className);
+            }
+        }
+        else
+        {
+            new SurvivorCharacter:charIndex = IdentifySurvivor(target);
+            if (charIndex == SC_NONE) 
+                return Plugin_Continue;
+            
+            decl String:charName[8];
+            GetSurvivorName(charIndex, charName, sizeof(charName));
+
+            PrintToChatAll("[StaggerBlockv2] Staggering %s, source: %s", charName, className);
+            PrintToServer("[StaggerBlockv2] Staggering %s, source: %s", charName, className);
+        }
     }
     return Plugin_Continue;
 }
