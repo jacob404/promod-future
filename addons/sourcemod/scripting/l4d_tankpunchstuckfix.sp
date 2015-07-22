@@ -60,7 +60,6 @@ public APLRes:AskPluginLoad2( Handle:plugin, bool:late, String:error[], errMax)
 
 public OnPluginStart()
 {
-	tpsf_debug_print = CreateConVar("tpsf_debug_print, "1","Enable the Debug Print?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
     // hook already existing clients if loading late
     if (g_bLateLoad) {
         for (new i = 1; i < MaxClients+1; i++) {
@@ -72,7 +71,8 @@ public OnPluginStart()
     
     // cvars
     g_hCvarDeStuckTime = CreateConVar(      "sm_punchstuckfix_unstucktime",     "1.0",      "How many seconds to wait before detecting and unstucking a punched motionless player.", FCVAR_PLUGIN, true, 0.05, false);
-    
+    tpsf_debug_print = CreateConVar("tpsf_debug_print, "1","Enable the Debug Print?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	
     // hooks
     HookEvent("round_start", RoundStart_Event, EventHookMode_PostNoCopy);
     
