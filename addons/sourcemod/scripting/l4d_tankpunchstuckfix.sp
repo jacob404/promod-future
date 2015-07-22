@@ -200,7 +200,7 @@ public Action: Timer_CheckPunch(Handle:hTimer, any:client)
                         g_fPlayerStuck[client] = 0.0;
 
                         CTerrorPlayer_WarpToValidPositionIfStuck(client);
-                        if(GetConVarBool(tpsf_debug_print) CPrintToChatAll("<{olive}TankPunchStuck{default}> Found {blue}%N{default} stuck after a punch. Warped him to a valid position.", client);
+                        if(GetConVarBool(tpsf_debug_print)) CPrintToChatAll("<{olive}TankPunchStuck{default}> Found {blue}%N{default} stuck after a punch. Warped him to a valid position.", client);
                         return Plugin_Stop;
                     }
                 }
