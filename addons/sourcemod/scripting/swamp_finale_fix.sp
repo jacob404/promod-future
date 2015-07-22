@@ -39,6 +39,5 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		if(!IsValidEdict(FinaleEntity) || !IsValidEntity(FinaleEntity) || !IsPlantation) continue;
 		AcceptEntityInput(FinaleEntity, "ForceFinaleStart");
-		PrintToChatAll("ayy lmao");
 	}
 }
