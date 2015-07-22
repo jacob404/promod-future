@@ -6,6 +6,8 @@
 - Updated readyup so that only the survivor who attempts to leave saferoom will be warped back, rather than the whole team.
 - Fixed melee weapons not being limited to 0 in Reflux.
 - Common infected will no longer fight each other.
+- Removed "Found x in x team. Moved him back to spec team." print.
+- Removed "<TankPunchStuck> Found x stuck after a punch. Warped him to a valid position" print.
 
 
 4.3.1
