@@ -1,20 +1,34 @@
 #include <sourcemod>
 #include <sdkhooks>
 #include <sdktools>
- 
+
+
+
+#define SEQ_COACH_NICK    		  630
+#define SEQ_ELLIS				  635
+#define SEQ_ROCHELLE     		  638
+#define SEQ_BILL_LOUIS	  	      538
+#define SEQ_FRANCIS               541
+#define SEQ_ZOEY                  547
+
+
+new lastAnimSequence[MAXPLAYERS + 1];
+//Should initialise array as all false
+new bool:giveWeapon[MAXPLAYERS + 1];             
+new 	i = 0;
+
 public Plugin:myinfo =
 {
     name = "L4D2 Melee and Shove Shenanigans",
-    author = "Sir",
-    description = "Stops Shoves slowing the Tank and Charger Down and Survivors getting melee hits on Tanks between punches.",
-    version = "1.fun",
+    author = "Sir, High Cookie and Standalone",
+    description = "Stops Shoves slowing the Tank and stops survivors keeping melee out after tank punch",
+    version = "1.ʕ•ᴥ•ʔ",
     url = ""
 }
 
 public OnPluginStart()
 {
     HookEvent("player_hurt", PlayerHit);
-	CreateTimer(5.0, SwitchWeapon);
 }
  
 public Action:PlayerHit(Handle:event, String:event_name[], bool:dontBroadcast)
@@ -29,37 +43,84 @@ public Action:PlayerHit(Handle:event, String:event_name[], bool:dontBroadcast)
  
         decl String:weaponname[64];
         GetEdictClassname(activeweapon, weaponname, sizeof(weaponname));
-        if (!StrEqual(weaponname, "weapon_melee", false)) return;
-        ///g_fStoredNext[PlayerID] = 0.0;
-		
-		if (GetPlayerWeaponSlot(PlayerID, 1) != -1)
+        if (!StrEqual(weaponname, "weapon_melee", false)) return;		
+		if (GetPlayerWeaponSlot(PlayerID, 0) != -1)
 		{
-			PrintToChatAll("TIME FOR SOME COOL TIMING");
-			CreateTimer(5.0, SwitchWeapon, PlayerID);
-		
-
-			
+			SDKHook(PlayerID, SDKHook_PostThink, OnThink);
 		}
 		return;
 		
 		
     }
 }
-public Action:SwitchWeapon(Handle:timer, any:client)
+
+public OnThink(client)
 {
+	if(i > 300)
+		{ 
+		i = 0;
+		SDKUnhook(client, SDKHook_PostThink, OnThink);
+		}
+	i = 1 + i;
 	
-	PrintToChatAll("TIMING DONE!");
+    new sequence = GetEntProp(client, Prop_Send, "m_nSequence");
+    
+    if (!giveWeapon[client])
+    {
+        if ((lastAnimSequence[client] == SEQ_COACH_NICK && sequence != SEQ_COACH_NICK) || (lastAnimSequence[client] == SEQ_ELLIS && sequence != SEQ_ELLIS) || (lastAnimSequence[client] == SEQ_ROCHELLE   && sequence != SEQ_ROCHELLE)|| (lastAnimSequence[client] == SEQ_BILL_LOUIS   && sequence != SEQ_BILL_LOUIS)|| (lastAnimSequence[client] == SEQ_FRANCIS   && sequence != SEQ_FRANCIS)|| (lastAnimSequence[client] == SEQ_ZOEY   && sequence != SEQ_ZOEY))
+        {
+            giveWeapon[client] = true;
+        }
+    }
+    else
+    {
+        SwapToGun(client)
+        giveWeapon[client] = false;
+		i = 0;
+        SDKUnhook(client, SDKHook_PostThink, OnThink);
+    }
+	lastAnimSequence[client] = sequence;
+}
+
+stock GetWeaponAmmo(client, slot)
+{
+    new ammoOffset = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
+    return GetEntData(client, ammoOffset+(slot*4));
+}
+stock SetWeaponAmmo(client, slot, ammo)
+{
+	new ammoOffset = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
+	return SetEntData(client, ammoOffset+(slot*4), ammo);
+}
+
+public Action: SwapToGun(any:client)
+{
+	//What Gun did they have?
 	decl String:weaponname[64];
-    new weaponindex = GetPlayerWeaponSlot(client, 0)
+	new weaponindex = GetPlayerWeaponSlot(client, 0);
 	GetEdictClassname(weaponindex, weaponname, sizeof(weaponname));
-	new extraammo = GetEntProp(weaponindex, Prop_Send, "m_iExtraPrimaryAmmo");
-	PrintToChatAll("Extra Ammo %i", extraammo);
-	extraammo = GetEntProp(weaponindex, Prop_Send, "m_iClip1");
-	PrintToChatAll("Extra Ammo %i", extraammo);
-	extraammo = GetEntProp(client, Prop_Send, "m_iAmmo");
-	PrintToChatAll("Extra Ammo %i", extraammo);
-	EquipPlayerWeapon(client, weaponindex)
 	
+	//How much ammo in their clip?
+	new ammoclip = GetEntProp(weaponindex, Prop_Send, "m_iClip1");
+	
+	//How much ammo reserve did they have?
+	new ammotype = GetEntProp(weaponindex, Prop_Send, "m_iPrimaryAmmoType");
+	new reserveammo = GetWeaponAmmo(client, ammotype);
+	
+	//Delete their Gun	
+	AcceptEntityInput(weaponindex, "kill");
+	
+	//Give them a new Gun of the same type
+	new flagsgive = GetCommandFlags("give");
+	SetCommandFlags("give", flagsgive & ~FCVAR_CHEAT);
+	FakeClientCommand(client, "give %s", weaponname);
+	SetCommandFlags("give", flagsgive|FCVAR_CHEAT);
+		
+	//Set the ammo to the correct number
+	weaponindex = GetPlayerWeaponSlot(client, 0);		
+	SetEntProp(weaponindex, Prop_Send, "m_iClip1", ammoclip);
+	SetWeaponAmmo(client, ammotype, reserveammo);
+	return
 }
  
 public Action:L4D_OnShovedBySurvivor(shover, shovee, const Float:vector[3])
