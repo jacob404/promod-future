@@ -26,29 +26,22 @@ public Plugin:myinfo =
 
 public OnPluginStart() 
 {
-    HookEvent("pounce_stopped", Event_PounceChargeEnd); //There's also a pounce_end event, will have to check what the difference is, pounce end does some wierd shit D:
+    HookEvent("pounce_stopped", Event_PounceChargeEnd);
     HookEvent("charger_pummel_end", Event_PounceChargeEnd);
     HookEvent("charger_carry_end", Event_PounceChargeEnd);
     HookEvent("player_bot_replace", Event_PlayerBotReplace);
     HookEvent("bot_player_replace", Event_BotPlayerReplace);
     HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
-    
-    PrintToChatAll("[StaggerBlock] Loaded");
-    PrintToServer("[StaggerBlock] Loaded");
 }
 
 public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     ResetStaggerBlocked();
-    PrintToChatAll("[StaggerBlock] Reset stagger array, Round End");
-    PrintToServer("[StaggerBlock] Reset stagger array, Round End");
 }
 
 public OnMapEnd()
 {
     ResetStaggerBlocked();
-    PrintToChatAll("[StaggerBlock] Reset stagger array, End of Map");
-    PrintToServer("[StaggerBlock] Reset stagger array, End of Map");
 }
 
 //Called when a Player replaces a Bot
@@ -60,12 +53,8 @@ public Action:Event_BotPlayerReplace(Handle:event, const String:name[], bool:don
     
     if (isSurvivorStaggerBlocked[charIndex])
     {
-        //Not really necessary since it should on next tick unhook as the survivor will immediately get up, but doesn't hurt and might change in the future.
         SDKHook(player, SDKHook_PostThink, OnThink);
     }
-    
-    PrintToChatAll("[StaggerBlock] %i was just replaced by a player", charIndex);
-    PrintToServer("[StaggerBlock] %i was just replaced by a player", charIndex);
 }
 
 //Called when a Bot replaces a Player
@@ -77,37 +66,22 @@ public Action:Event_PlayerBotReplace(Handle:event, const String:name[], bool:don
     
     if (isSurvivorStaggerBlocked[charIndex])
     {
-        //Not really necessary since it should on next tick unhook as the survivor will immediately get up, but doesn't hurt and might change in the future.
         SDKHook(bot, SDKHook_PostThink, OnThink);
     }
-    
-    PrintToChatAll("[StaggerBlock] %i was just replaced by a bot", charIndex);
-    PrintToServer("[StaggerBlock] %i was just replaced by a bot", charIndex);
 }
 
-//Only odd thing that happens is that when a charger knocks a survivor up against a wall and is then immediately cleared, the player will still have to get up
-//but the pummel does not begin so there is no call to charger_pummel_end, this is why we're including the charger_carry_end and then checking .2 seconds later
-//if they are in getup animation or if they are still being pummelled
 public Action:Event_PounceChargeEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
     new client = GetClientOfUserId(GetEventInt(event, "victim"));
     new SurvivorCharacter:charIndex = IdentifySurvivor(client);
     if (charIndex == SC_NONE) return;
     
-    //May change this so charger_carry_end has a timer before being added into the array as a stagger blocked player, to stop the rare occasion where the player is stagger blocked between a long charge and a pummel
     CreateTimer(0.2, HookOnThink, client);
     isSurvivorStaggerBlocked[charIndex] = true;
-    
-    PrintToChatAll("[StaggerBlock] %i has been stagger blocked", charIndex);
-    PrintToServer("[StaggerBlock] %i has been stagger blocked", charIndex);
 }
 
-//possible issue if player disconnects during the 0.1 second timer?
-//If player disconnects during the 0.1 second timer then hook won't be called and they'll be vulnerable to staggers, BUT
-//when a player leaves or joins the bot/player immediately completes the getup animation
 public Action:HookOnThink(Handle:timer, any:client)
 {
-    //check to see if valid client due to above reasons
     if (client && IsClientInGame(client) && IsSurvivor(client))
     {
         SDKHook(client, SDKHook_PostThink, OnThink);
@@ -115,9 +89,6 @@ public Action:HookOnThink(Handle:timer, any:client)
     
 }
 
-//Using on think think because of possible pauses, must automatically unhook when player disconnects, did tests this seems to be the case
-//Could make a timer that runs for the length of time that the animation runs for, (pause/disconnect/connect issues?)
-//Timers would be too strict on what I can do I think
 public OnThink(client)
 {
     new SurvivorCharacter:charIndex = IdentifySurvivor(client);
@@ -128,9 +99,6 @@ public OnThink(client)
     {
         isSurvivorStaggerBlocked[charIndex] = false;
         SDKUnhook(client, SDKHook_PostThink, OnThink);
-        
-        PrintToChatAll("[StaggerBlock] %i is no longer stagger blocked", charIndex);
-        PrintToServer("[StaggerBlock] %i is no longer stagger blocked", charIndex);
     }
 }
 
@@ -147,10 +115,6 @@ public Action:L4D2_OnStagger(target, source)
             
             if (isSurvivorStaggerBlocked[charIndex])
             {
-            
-                PrintToChatAll("[StaggerBlock] %i has had a stagger blocked", charIndex);
-                PrintToServer("[StaggerBlock] %i has had a stagger blocked", charIndex);
-                
                 return Plugin_Handled;
             }
         }
