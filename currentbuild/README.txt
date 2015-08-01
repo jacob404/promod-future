@@ -8,6 +8,10 @@
 - Common infected will no longer fight each other.
 - Removed "Found x in x team. Moved him back to spec team." print.
 - Removed "<TankPunchStuck> Found x stuck after a punch. Warped him to a valid position" print.
+- Survivors will no longer have a forced delay between melee swings after being punched.
+- Survivors will now be forced to pull out their primary weapon (if they have ammo available) when punched by tank.
+- Survivors will no longer "slide" if they are stumbled while in a get-up animation. Boomers are an exception and will still push survivors.
+- Potentially fixed Swamp Fever finale bugging out for the 2nd team if the 1st team wipes before starting the finale.
 
 
 4.3.1
