@@ -110,17 +110,40 @@ public Action: SwapToGun(any:client)
 	//Delete their Gun	
 	AcceptEntityInput(weaponindex, "kill");
 	
-	//Give them a new Gun of the same type
-	new flagsgive = GetCommandFlags("give");
-	SetCommandFlags("give", flagsgive & ~FCVAR_CHEAT);
-	FakeClientCommand(client, "give %s", weaponname);
-	SetCommandFlags("give", flagsgive|FCVAR_CHEAT);
-		
-	//Set the ammo to the correct number
-	weaponindex = GetPlayerWeaponSlot(client, 0);		
-	SetEntProp(weaponindex, Prop_Send, "m_iClip1", ammoclip);
-	SetWeaponAmmo(client, ammotype, reserveammo);
+	new Handle:hData;
+	CreateDataTimer(0.01, TimedSwap, hData);
+	WritePackCell(hData, client);
+	WritePackString(hData, weaponname);
+	WritePackCell(hData, ammoclip);
+	WritePackCell(hData, ammotype);
+	WritePackCell(hData, reserveammo);
+	
 	return
+}
+
+public Action:TimedSwap(Handle:Timer, Handle:hData)
+{
+    new client, ammoclip, ammotype, reserveammo, weaponindex;
+    decl String:weaponname[64];
+    
+    ResetPack(hData);
+    client = ReadPackCell(hData);
+    ReadPackString(hData, weaponname, sizeof(weaponname));
+    ammoclip = ReadPackCell(hData);
+    ammotype = ReadPackCell(hData);
+    reserveammo = ReadPackCell(hData);
+	
+    //Give them a new Gun of the same type
+    new flagsgive = GetCommandFlags("give");
+    SetCommandFlags("give", flagsgive & ~FCVAR_CHEAT);
+    FakeClientCommand(client, "give %s", weaponname);
+    SetCommandFlags("give", flagsgive|FCVAR_CHEAT);
+    
+    //Set the ammo to the correct number
+    weaponindex = GetPlayerWeaponSlot(client, 0);		
+    SetEntProp(weaponindex, Prop_Send, "m_iClip1", ammoclip);
+    SetWeaponAmmo(client, ammotype, reserveammo);
+    return
 }
  
 public Action:L4D_OnShovedBySurvivor(shover, shovee, const Float:vector[3])
