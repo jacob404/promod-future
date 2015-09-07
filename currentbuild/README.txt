@@ -12,6 +12,9 @@
 - Survivors will now be forced to pull out their primary weapon (if they have ammo available) when punched by tank.
 - Survivors will no longer "slide" if they are stumbled while in a get-up animation. Boomers are an exception and will still push survivors.
 - Potentially fixed Swamp Fever finale bugging out for the 2nd team if the 1st team wipes before starting the finale.
+- Fixed Autocommunicator getting stuck on "Spit on this!"
+- Fixed a bug where infected wouldn't be extinguished when lit on fire.
+- By default, all saferooms will now have the unsilenced uzi and pump shotgun. We will be enabling the upgraded weapons based on map balance going into the future.
 
 
 4.3.1
