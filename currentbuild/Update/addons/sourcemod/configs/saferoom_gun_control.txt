@@ -1,0 +1,14 @@
+"SaferoomGunControl"
+{
+    "default"
+    {
+        "1" "weapon_smg"
+        "2" "weapon_smg_silenced"
+    }
+    
+    "c5m1_waterfront"
+    {
+        "1" "weapon_shotgun_chrome"
+        "2" "weapon_pumpshotgun"
+    }
+}
