@@ -26,7 +26,7 @@ new bool:isReloading[MAXPLAYERS + 1] = false;
 //new bool:isOutOfPosition[MAXPLAYERS + 1] = false;
 //new bool:hasThrowableArmed[MAXPLAYERS + 1] = false;
 //new bool:seesSurvivorArmingThrowable[MAXPLAYERS + 1] = false;
-new bool:isSpitterAvailable = false;
+//new bool:isSpitterAvailable = false;
 //new bool:isChargerAvailable = false;
 
 new ItemType:ItemSpawn[MAXPLAYERS+1];
@@ -158,25 +158,19 @@ public PrioritizeMessage(client)
 		}
 		else if(isCharging[client])
 		{
-			if(isSpitterAvailable)
+			/*if(isSpitterAvailable)
 			{
 				PrintToInfected("(Infected) {red}%N {default}:  Spit on this!", client);
-			}
-			else
-			{
+			}*/
 				PrintToInfected("(Infected) {red}%N {default}:  Cover me! I landed my charge!", client);
-			}
 		}
 		else if(isPouncing[client])
 		{
-			if(isSpitterAvailable)
+			/*if(isSpitterAvailable)
 			{
 				PrintToInfected("(Infected) {red}%N {default}:  Spit on this!", client);
-			}
-			else
-			{
+			}*/
 				PrintToInfected("(Infected) {red}%N {default}:  Cover me! I pounced one!", client);
-			}
 		}
 		else
 		{
@@ -191,17 +185,17 @@ public PrioritizeMessage(client)
 
 
 // Spawn Detection
-public L4D_OnEnterGhostState(client)
+/*public L4D_OnEnterGhostState(client)
 {
     if (GetEntProp(client, Prop_Send, "m_zombieClass") == 4)
     {
         isSpitterAvailable = true;
     }
-	/*else if(GetEntProp(client, Prop_Send, "m_zombieClass") == 6)
+	else if(GetEntProp(client, Prop_Send, "m_zombieClass") == 6)
 	{
 		isChargerAvailable = true;
-	}*/
-}
+	}
+}*/
 
 // Chargers
 public Event_SurvivorCharged(Handle:event, const String:name[], bool:dontBroadcast)
@@ -277,7 +271,7 @@ public Event_PullEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	isPulled[victim] = false;
 }
 
-public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+/*public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new player = GetClientOfUserId(GetEventInt(event, "userid"));
 	if(IS_VALID_INFECTED(player))
@@ -287,7 +281,7 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 			isSpitterAvailable = false;
 		}
 	}
-}
+}*/
 
 // Ammo
 //public Event_LowAmmo(Handle:event, const String:name[], bool:dontBroadcast)

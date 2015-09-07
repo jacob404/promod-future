@@ -21,6 +21,14 @@ public OnPluginStart()
 	HookEvent("player_hurt",SIOnFire);
 }
 
+public OnMapStart()
+{
+	for(new i = 1; i < MaxClients+1; i++)
+	{
+		inWait[i] = false;
+	}
+}
+
 public SIOnFire(Handle:event, const String:name[], bool:dontBroadcast)
 {
     
@@ -29,6 +37,8 @@ public SIOnFire(Handle:event, const String:name[], bool:dontBroadcast)
     
     new dmgtype = GetEventInt(event,"type");
     if(dmgtype != 8) return;
+	
+    if(GetEntProp(client, Prop_Send, "m_zombieClass") == 8) ExtinguishEntity(client);
 
     if(GetConVarInt(infected_fire_immunity) == 3) CreateTimer(1.0, Extinguish, client);
 
@@ -48,7 +58,7 @@ public Action:Extinguish(Handle:timer, any:client)
     {
         ExtinguishEntity(client);
         inWait[client] = true;
-        CreateTimer(1.2, ExtinguishWait, client);
+        CreateTimer(0.9, ExtinguishWait, client);
     }
 }
 
