@@ -25,12 +25,9 @@ public OnPluginStart()
 
 public Action:sound_hook(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags)
 {
-	if (IsSurvivor(entity))
+	if (StrContains(sample, "WarnHunter")!=-1)
 	{
-		if (StrContains(sample, "WarnHunter")!=-1)
-		{
-			return Plugin_Handled;
-		}
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
