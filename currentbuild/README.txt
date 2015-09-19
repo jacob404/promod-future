@@ -1,3 +1,9 @@
+4.4.1
+- Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
+- Removed molotovs since tanks are still being lit. I will re-add them when I am certain they are working.
+- Enabled upgraded weapons in some start saferooms. (c1m4, c2m3, c3m4, c4m2, c5m1, c5m5)
+- Lowered boomer horde call per survivor from 18 to 13. Max is still 30 (AKA Boomer Horde scale changed from: 18/30/30/30 to 13/26/30/30)
+
 4.4
 - Players are no longer able to skip their death cam as infected to manipulate their spawn time and sac order. (Pro Mod and Reflux only)
 - Spawn timers reduced by 2 seconds in Pro Mod and Reflux.

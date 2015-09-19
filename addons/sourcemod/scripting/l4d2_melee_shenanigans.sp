@@ -111,7 +111,7 @@ public Action: SwapToGun(any:client)
 	AcceptEntityInput(weaponindex, "kill");
 	
 	new Handle:hData;
-	CreateDataTimer(0.01, TimedSwap, hData);
+	CreateDataTimer(0.1, TimedSwap, hData);
 	WritePackCell(hData, client);
 	WritePackString(hData, weaponname);
 	WritePackCell(hData, ammoclip);
