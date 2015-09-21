@@ -22,7 +22,7 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(IsValidClient(client) && GetClientTeam(client) == 3)
 	{
 		FakeClientCommand(client, "+jump");
-		FakeClientCommand(client, "+attack1");
+		FakeClientCommand(client, "+attack");
 		FakeClientCommand(client, "+attack2");
 		CreateTimer(8.0, RemoveSpamBlock, client);
 	}
@@ -31,7 +31,7 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 public Action:RemoveSpamBlock(Handle:timer, any:client)
 {
 	FakeClientCommand(client, "-jump");
-	FakeClientCommand(client, "-attack1");
+	FakeClientCommand(client, "-attack");
 	FakeClientCommand(client, "-attack2");
 }
 
