@@ -1,3 +1,7 @@
+4.5
+- Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
+- Fixed everyone being warped when only one person attempted to leave saferoom during readyup.
+
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
 - Removed molotovs since tanks are still being lit. I will re-add them when I am certain they are working.
