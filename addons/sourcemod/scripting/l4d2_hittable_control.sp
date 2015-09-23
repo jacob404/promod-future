@@ -67,7 +67,7 @@ public OnPluginStart()
 	hStandardIncapDamage	= CreateConVar( "hc_incap_standard_damage",		"100",
 											"Damage of all hittables to incapped players. -1 will have incap damage default to valve's standard incoherent damages. -2 will have incap damage default to each hittable's corresponding standing damage.",
 											FCVAR_PLUGIN, true, -2.0, true, 300.0 );
-	hTankSelfDamage			= CreateConVar( "hc_disable_self_damage",		"0",
+	hTankSelfDamage			= CreateConVar( "hc_disable_self_damage",		"1",
 											"If set, tank will not damage itself with hittables.",
 											FCVAR_PLUGIN, true, 0.0, true, 1.0 );
 	hOverHitInterval		= CreateConVar( "hc_overhit_time",				"1.2",
