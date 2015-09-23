@@ -2,6 +2,7 @@
 - Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
 - Fixed everyone being warped when only one person attempted to leave saferoom during readyup.
 - Fixed a way that infected were still able to skip death cam.
+- Fixed tanks dealing self-damage with hittables.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
@@ -66,7 +67,7 @@ Swamp Fever 1:
 Hard Rain 1:
 - Fixed Survivors being able to be punched onto the bushes near the end.
 - Blocked a god spot on an edge of the Burger Tank sign.
-- Made alarm car spawning logic match campaign mode. 
+- Made alarm car spawning logic match campaign mode.
 Hard Rain 2 & 3:
 - Removed Valve clips in the ramp drop building that would prevent you from jumping in certain areas. Replaced with remade clips of the correct sizes.
 - Fixed getting stuck between an angled pipe on the ground and a walkway above near the ramp drop. Added a small prop as a visual indicator.
@@ -74,7 +75,7 @@ Hard Rain 4:
 - Fixed Survivors being able to be punched onto the bushes near the beginning.
 - Fixed items sometimes spawni!mng in the map 5 Burger Tank area.
 - Removed a prop accidentally left in.
-- Made alarm car spawning logic match campaign mode. 
+- Made alarm car spawning logic match campaign mode.
 Hard Rain 5:
 - Blocked a god spot on an edge of the Burger Tank sign.
 The Parish 1:
@@ -99,7 +100,7 @@ Death Toll 5:
 Dead Air 3:
 - Added some minor detail props on the ramp at the start.
 Dead Air 4:
-- Removed the second event triggered by walking through the metal detector. 
+- Removed the second event triggered by walking through the metal detector.
 - Added a few props to the final stretch to compensate for difficulty change.
 - Removed all doors from the map.
 - Removed some annoying trash can debris props.
