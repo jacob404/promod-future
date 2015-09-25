@@ -3,6 +3,7 @@
 - Fixed everyone being warped when only one person attempted to leave saferoom during readyup.
 - Fixed a way that infected were still able to skip death cam.
 - Fixed tanks dealing self-damage with hittables.
+- Added AutoPause: Game automatically pauses when a player crashes. When a player returns, their spawn timer is restored.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
