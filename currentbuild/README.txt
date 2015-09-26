@@ -4,6 +4,8 @@
 - Fixed a way that infected were still able to skip death cam.
 - Fixed tanks dealing self-damage with hittables.
 - Added AutoPause: Game automatically pauses when a player crashes. When a player returns, their spawn timer is restored.
+- Fixed various double-getups.
+- When a player is rocked and then punched, they will undergo a punch getup animation after the rock animation ends.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
