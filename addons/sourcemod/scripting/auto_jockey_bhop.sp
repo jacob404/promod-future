@@ -22,10 +22,10 @@ new Float:lastAutoBunnyTime[MAXPLAYERS + 1];
 
 public OnPluginStart()
 {
-    autoBunnyCooldown = CreateConVar("jockey_bunny_cooldown", "0.5", "Time between auto bunny hop grace periods", CVAR_FLAGS, true, 0.0);
-    autoBunnyDuration = CreateConVar("jockey_bunny_duration", "0.1", "Time allowed for automatic bunny hop periods", CVAR_FLAGS, true, 0.0);
-    autoBunnyGhostEnabled  = CreateConVar("jockey_bunny_ghost_enabled", "1.0", "Set whether auto Jockey bunny hops are enabled while in ghost mode. 1 = Enabled", CVAR_FLAGS);
-    autoBunnyEnabled  = CreateConVar("jockey_bunny_enabled", "1.0", "Set whether auto Jockey bunny hops are enabled. 1 = Enabled", CVAR_FLAGS);
+    autoBunnyCooldown       = CreateConVar("jockey_bunny_cooldown", "0.5", "Time between auto bunny hop grace periods", CVAR_FLAGS, true, 0.0);
+    autoBunnyDuration       = CreateConVar("jockey_bunny_duration", "0.1", "Time allowed for automatic bunny hop periods", CVAR_FLAGS, true, 0.0);
+    autoBunnyGhostEnabled   = CreateConVar("jockey_bunny_ghost_enabled", "1.0", "Set whether auto Jockey bunny hops are enabled while in ghost mode. 1 = Enabled", CVAR_FLAGS);
+    autoBunnyEnabled        = CreateConVar("jockey_bunny_enabled", "1.0", "Set whether auto Jockey bunny hops are enabled. 1 = Enabled", CVAR_FLAGS);
     
     HookEvent("round_start", Event_RoundStart);
 }
@@ -67,6 +67,16 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                         lastAutoBunnyTime[client] = currentTime;
                     }
                 }
+                else //jump button being held down, but this is not the first frame it was pressed
+                {
+                    //if player is on a ladder and the jump button is held down
+                    if (GetEntityMoveType(client) & MOVETYPE_LADDER)
+                    {
+                        //remove the jump input
+                        //this fixes the issue where you jump onto a ladder while holding down IN_JUMP and when the grace period ends you jump off the ladder
+                        buttons &= ~IN_JUMP;
+                    }
+                }
             } 
             else
             {
@@ -79,8 +89,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                 //if currently holding the jump button down
                 if (buttons & IN_JUMP)
                 { 
-                    //if player is currently in the air
-                    //slight issue here if you jump straight onto a ladder while holding down jump, since it's removing IN_JUMP from the input, as soon as you hit the ladder your jump input goes through and you jump off the ladder
+                    //if player is currently in the air & not on a ladder
                     if (!(GetEntityFlags(client) & FL_ONGROUND) && !(GetEntityMoveType(client) & MOVETYPE_LADDER) && GetEntProp(client, Prop_Data, "m_nWaterLevel") <= 1)
                     {
                         //remove IN_JUMP from the buttons pressed
@@ -89,9 +98,10 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                 }
                 else //if jump button not held down
                 {
-                    //if player lands on the ground during the grace period and the jump button is not held, add IN_JUMP to the buttons
+                    //if player lands on the ground during the grace period
                     if ((GetEntityFlags(client) & FL_ONGROUND) && !(GetEntityMoveType(client) & MOVETYPE_LADDER) && GetEntProp(client, Prop_Data, "m_nWaterLevel") <= 1)
                     {
+                        //add IN_JUMP to the buttons
                         buttons = buttons + IN_JUMP;
                     }
                 }
