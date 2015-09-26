@@ -18,8 +18,6 @@ new Handle:autoBunnyGhostEnabled    = INVALID_HANDLE;
 new Handle:autoBunnyEnabled         = INVALID_HANDLE;
 
 new bool:jumpButtonDown[MAXPLAYERS + 1];
-//Using this in case of multiple Jockey's (should never really be a thing but eh)
-new bool:clientJumpToggle[MAXPLAYERS + 1];
 new Float:lastAutoBunnyTime[MAXPLAYERS + 1];
 
 public OnPluginStart()
@@ -30,6 +28,15 @@ public OnPluginStart()
     autoBunnyEnabled  = CreateConVar("jockey_bunny_enabled", "1.0", "Set whether auto Jockey bunny hops are enabled. 1 = Enabled", CVAR_FLAGS);
     
     HookEvent("round_start", Event_RoundStart);
+}
+
+public OnPluginEnd()
+{
+    PrintToChatAll("Disposing of CVAR Handles");
+    CloseHandle(autoBunnyCooldown);
+    CloseHandle(autoBunnyDuration);
+    CloseHandle(autoBunnyGhostEnabled);
+    CloseHandle(autoBunnyEnabled);
 }
 
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
@@ -69,27 +76,23 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
             //Do auto bunny hop if in grace period
             if (currentTime < lastAutoBunnyTime[client] + duration)
             {
-                //ff currently holding the jump button down
+                //if currently holding the jump button down
                 if (buttons & IN_JUMP)
-                {
-                    //if in a position to bunny hop
+                { 
+                    //if player is currently in the air
+                    //slight issue here if you jump straight onto a ladder while holding down jump, since it's removing IN_JUMP from the input, as soon as you hit the ladder your jump input goes through and you jump off the ladder
                     if (!(GetEntityFlags(client) & FL_ONGROUND) && !(GetEntityMoveType(client) & MOVETYPE_LADDER) && GetEntProp(client, Prop_Data, "m_nWaterLevel") <= 1)
                     {
-                        //toggle the jump button
+                        //remove IN_JUMP from the buttons pressed
                         buttons &= ~IN_JUMP;
                     }
-                }//if jump button not held down
-                else
+                }
+                else //if jump button not held down
                 {
-                    //rapidly toggle the jump button for the client for an automatic bunny hop with no key input
-                    if (clientJumpToggle[client])
+                    //if player lands on the ground during the grace period and the jump button is not held, add IN_JUMP to the buttons
+                    if ((GetEntityFlags(client) & FL_ONGROUND) && !(GetEntityMoveType(client) & MOVETYPE_LADDER) && GetEntProp(client, Prop_Data, "m_nWaterLevel") <= 1)
                     {
                         buttons = buttons + IN_JUMP;
-                        clientJumpToggle[client] = false;
-                    }
-                    else
-                    {
-                        clientJumpToggle[client] = true;
                     }
                 }
             }
@@ -102,7 +105,6 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
     for (new i = 0; i < MAXPLAYERS + 1; i++)
     {
         jumpButtonDown[i] = false;
-        clientJumpToggle[i] = false;
         lastAutoBunnyTime[i] = 0.0;
     }
 }
