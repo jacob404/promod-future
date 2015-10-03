@@ -19,7 +19,7 @@ enum L4D2Gamemode
 	L4D2Gamemode_Scavenge
 };
 
-enum L4D2SI 
+enum L4D2SI
 {
 	ZC_None,
 	ZC_Smoker,
@@ -32,7 +32,7 @@ enum L4D2SI
 	ZC_Tank
 };
 
-static const String:L4D2SI_Names[][] = 
+static const String:L4D2SI_Names[][] =
 {
 	"None",
 	"Smoker",
@@ -53,7 +53,7 @@ new bool:bSpecHudHintShown[MAXPLAYERS + 1];
 new bool:bTankHudActive[MAXPLAYERS + 1];
 new bool:bTankHudHintShown[MAXPLAYERS + 1];
 
-public Plugin:myinfo = 
+public Plugin:myinfo =
 {
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor",
@@ -62,7 +62,7 @@ public Plugin:myinfo =
 	url = "https://github.com/Attano/smplugins"
 };
 
-public OnPluginStart() 
+public OnPluginStart()
 {
 	survivor_limit = FindConVar("survivor_limit");
 	z_max_player_zombies = FindConVar("z_max_player_zombies");
@@ -81,25 +81,25 @@ public OnClientAuthorized(client, const String:auth[])
 	bTankHudHintShown[client] = false;
 }
 
-public Action:ToggleSpecHudCmd(client, args) 
+public Action:ToggleSpecHudCmd(client, args)
 {
 	bSpecHudActive[client] = !bSpecHudActive[client];
 	CPrintToChat(client, "<{olive}HUD{default}> Spectator HUD is now %s.", (bSpecHudActive[client] ? "{blue}on{default}" : "{red}off{default}"));
 }
 
-public Action:ToggleTankHudCmd(client, args) 
+public Action:ToggleTankHudCmd(client, args)
 {
 	bTankHudActive[client] = !bTankHudActive[client];
 	CPrintToChat(client, "<{olive}HUD{default}> Tank HUD is now %s.", (bTankHudActive[client] ? "{blue}on{default}" : "{red}off{default}"));
 }
 
-public Action:HudDrawTimer(Handle:hTimer) 
+public Action:HudDrawTimer(Handle:hTimer)
 {
 	if (IsInReady() || IsInPause())
 		return Plugin_Handled;
 
 	new bool:bSpecsOnServer = false;
-	for (new i = 1; i <= MaxClients; i++) 
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsSpectator(i))
 		{
@@ -118,7 +118,7 @@ public Action:HudDrawTimer(Handle:hTimer)
 		FillTankInfo(specHud);
 		FillGameInfo(specHud);
 
-		for (new i = 1; i <= MaxClients; i++) 
+		for (new i = 1; i <= MaxClients; i++)
 		{
 			if (!bSpecHudActive[i] || !IsSpectator(i) || IsFakeClient(i))
 				continue;
@@ -133,12 +133,12 @@ public Action:HudDrawTimer(Handle:hTimer)
 
 		CloseHandle(specHud);
 	}
-	
+
 	new Handle:tankHud = CreatePanel();
 	if (!FillTankInfo(tankHud, true)) // No tank -- no HUD
 		return Plugin_Handled;
 
-	for (new i = 1; i <= MaxClients; i++) 
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!bTankHudActive[i] || !IsClientInGame(i) || IsFakeClient(i) || IsSurvivor(i) || (bSpecHudActive[i] && IsSpectator(i)))
 			continue;
@@ -158,7 +158,7 @@ public Action:HudDrawTimer(Handle:hTimer)
 public DummySpecHudHandler(Handle:hMenu, MenuAction:action, param1, param2) {}
 public DummyTankHudHandler(Handle:hMenu, MenuAction:action, param1, param2) {}
 
-FillHeaderInfo(Handle:hSpecHud) 
+FillHeaderInfo(Handle:hSpecHud)
 {
 	DrawPanelText(hSpecHud, "Spectator HUD");
 
@@ -167,7 +167,7 @@ FillHeaderInfo(Handle:hSpecHud)
 	DrawPanelText(hSpecHud, buffer);
 }
 
-GetMeleePrefix(client, String:prefix[], length) 
+GetMeleePrefix(client, String:prefix[], length)
 {
 	new secondary = GetPlayerWeaponSlot(client, _:L4D2WeaponSlot_Secondary);
 	new WeaponId:secondaryWep = IdentifyWeapon(secondary);
@@ -185,7 +185,7 @@ GetMeleePrefix(client, String:prefix[], length)
 	strcopy(prefix, length, buf);
 }
 
-FillSurvivorInfo(Handle:hSpecHud) 
+FillSurvivorInfo(Handle:hSpecHud)
 {
 	decl String:info[512];
 	decl String:buffer[64];
@@ -195,7 +195,7 @@ FillSurvivorInfo(Handle:hSpecHud)
 	DrawPanelText(hSpecHud, "->1. Survivors");
 
 	new survivorCount;
-	for (new client = 1; client <= MaxClients && survivorCount < GetConVarInt(survivor_limit); client++) 
+	for (new client = 1; client <= MaxClients && survivorCount < GetConVarInt(survivor_limit); client++)
 	{
 		if (!IsSurvivor(client))
 			continue;
@@ -209,7 +209,7 @@ FillSurvivorInfo(Handle:hSpecHud)
 		{
 			new WeaponId:primaryWep = IdentifyWeapon(GetPlayerWeaponSlot(client, _:L4D2WeaponSlot_Primary));
 			GetLongWeaponName(primaryWep, info, sizeof(info));
-			GetMeleePrefix(client, buffer, sizeof(buffer)); 
+			GetMeleePrefix(client, buffer, sizeof(buffer));
 			Format(info, sizeof(info), "%s/%s", info, buffer);
 
 			if (IsSurvivorHanging(client))
@@ -241,7 +241,7 @@ FillSurvivorInfo(Handle:hSpecHud)
 	}
 }
 
-FillInfectedInfo(Handle:hSpecHud) 
+FillInfectedInfo(Handle:hSpecHud)
 {
 	DrawPanelText(hSpecHud, " ");
 	DrawPanelText(hSpecHud, "->2. Infected");
@@ -251,13 +251,13 @@ FillInfectedInfo(Handle:hSpecHud)
 	decl String:name[MAX_NAME_LENGTH];
 
 	new infectedCount;
-	for (new client = 1; client <= MaxClients && infectedCount < GetConVarInt(z_max_player_zombies); client++) 
+	for (new client = 1; client <= MaxClients && infectedCount < GetConVarInt(z_max_player_zombies); client++)
 	{
 		if (!IsInfected(client))
 			continue;
 
 		GetClientFixedName(client, name, sizeof(name));
-		if (!IsPlayerAlive(client)) 
+		if (!IsPlayerAlive(client))
 		{
 			new CountdownTimer:spawnTimer = L4D2Direct_GetSpawnTimer(client);
 			new Float:timeLeft = -1.0;
@@ -276,7 +276,7 @@ FillInfectedInfo(Handle:hSpecHud)
 				Format(info, sizeof(info), "%s: Dead (%s)", name, (RoundToNearest(timeLeft) ? buffer : "Spawning..."));
 			}
 		}
-		else 
+		else
 		{
 			new L4D2SI:zClass = GetInfectedClass(client);
 			if (zClass == ZC_Tank)
@@ -300,7 +300,7 @@ FillInfectedInfo(Handle:hSpecHud)
 		infectedCount++;
 		DrawPanelText(hSpecHud, info);
 	}
-	
+
 	if (!infectedCount)
 	{
 		DrawPanelText(hSpecHud, "There are no SI at this moment.");
@@ -330,7 +330,7 @@ bool:FillTankInfo(Handle:hSpecHud, bool:bTankHUD = false)
 	}
 
 	// Draw owner & pass counter
-	new passCount = L4D2Direct_GetTankPassedCount();
+	new passCount = GetConVarInt(FindConVar("tank_pass_number"));
 	switch (passCount)
 	{
 		case 0: Format(info, sizeof(info), "native");
@@ -448,11 +448,11 @@ FillGameInfo(Handle:hSpecHud)
 
 /* Stocks */
 
-GetClientFixedName(client, String:name[], length) 
+GetClientFixedName(client, String:name[], length)
 {
 	GetClientName(client, name, length);
 
-	if (name[0] == '[') 
+	if (name[0] == '[')
 	{
 		decl String:temp[MAX_NAME_LENGTH];
 		strcopy(temp, sizeof(temp), name);
@@ -461,17 +461,17 @@ GetClientFixedName(client, String:name[], length)
 		name[0] = ' ';
 	}
 
-	if (strlen(name) > 25) 
+	if (strlen(name) > 25)
 	{
 		name[22] = name[23] = name[24] = '.';
 		name[25] = 0;
 	}
 }
 
-GetRealClientCount() 
+GetRealClientCount()
 {
 	new clients = 0;
-	for (new i = 1; i <= MaxClients; i++) 
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientConnected(i) && IsClientInGame(i) && !IsFakeClient(i)) clients++;
 	}
@@ -497,7 +497,7 @@ Float:GetHighestSurvivorFlow()
 {
 	new Float:flow;
 	new Float:maxflow = 0.0;
-	for (new i = 1; i <= MaxClients; i++) 
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsSurvivor(i))
 		{
@@ -521,13 +521,13 @@ bool:RoundHasFlowWitch()
 	return L4D2Direct_GetVSWitchToSpawnThisRound(InSecondHalfOfRound());
 }
 
-Float:GetTankFlow() 
+Float:GetTankFlow()
 {
 	return L4D2Direct_GetVSTankFlowPercent(0) -
 		(Float:GetConVarInt(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
 }
 
-Float:GetWitchFlow() 
+Float:GetWitchFlow()
 {
 	return L4D2Direct_GetVSWitchFlowPercent(0) -
 		(Float:GetConVarInt(FindConVar("versus_boss_buffer")) / L4D2Direct_GetMapMaxFlowDistance());
@@ -548,7 +548,7 @@ bool:IsInfected(client)
 	return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 3;
 }
 
-bool:IsInfectedGhost(client) 
+bool:IsInfectedGhost(client)
 {
 	return bool:GetEntProp(client, Prop_Send, "m_isGhost");
 }
@@ -558,9 +558,9 @@ L4D2SI:GetInfectedClass(client)
 	return IsInfected(client) ? (L4D2SI:GetEntProp(client, Prop_Send, "m_zombieClass")) : ZC_None;
 }
 
-FindTank() 
+FindTank()
 {
-	for (new i = 1; i <= MaxClients; i++) 
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsInfected(i) && GetInfectedClass(i) == ZC_Tank && IsPlayerAlive(i))
 			return i;
