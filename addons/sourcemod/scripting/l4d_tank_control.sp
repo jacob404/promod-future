@@ -345,14 +345,10 @@ public chooseTank()
 
 public resetTank() {
     tankPass = 1;
+    SetConVarInt(hTankPass, 1);
     if (GetConVarBool(hLightTank)) {
         SetConVarInt(FindConVar("tank_fire_immunity"), tank_fire_immunity);
-        new Handle:tank_loses_frustration = FindConVar("z_frustration");
-        SetConVarInt(hTankPass, 1);
-        new flags = GetConVarFlags(tank_loses_frustration);
-        SetConVarFlags(tank_loses_frustration, flags & ~FCVAR_CHEAT);
-        SetConVarInt(tank_loses_frustration, 1);
-        SetConVarFlags(tank_loses_frustration, flags);
+        SetConVarInt(FindConVar("z_frustration"), 1);
         tankEnteredWater = false;
     }
 }
@@ -373,11 +369,7 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
             if (tankPass >= 3) {
                 tank_fire_immunity = GetConVarInt(FindConVar("tank_fire_immunity"));
                 SetConVarInt(FindConVar("tank_fire_immunity"), 0);
-                new Handle:tank_loses_frustration = FindConVar("z_frustration");
-                new flags = GetConVarFlags(tank_loses_frustration);
-                SetConVarFlags(tank_loses_frustration, flags & ~FCVAR_CHEAT);
-                SetConVarInt(tank_loses_frustration, 0);
-                SetConVarFlags(tank_loses_frustration, flags);
+                SetConVarInt(FindConVar("z_frustration"), 0);
             }
         } else {
             L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
@@ -418,11 +410,7 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
 
 public IgniteTank(tank) {
     new Float:duration = GetConVarFloat(hLightTankDuration);
-    new Handle:tank_burn_duration = FindConVar("tank_burn_duration");
-    new flags = GetConVarFlags(tank_burn_duration);
-    SetConVarFlags(tank_burn_duration, flags & ~FCVAR_CHEAT);
-    SetConVarInt(tank_burn_duration, RoundToFloor(duration));
-    SetConVarFlags(tank_burn_duration, flags);
+    SetConVarInt(FindConVar("tank_burn_duration"), RoundToFloor(duration));
     if (GetConVarBool(hTankDebug)) {
         PrintToConsoleAll("[TC] Igniting tank, will burn for %f seconds.", duration);
     }
@@ -446,7 +434,7 @@ public Action:BurnTank(Handle:timer, any:tank) {
     if (!IsPlayerAlive(tank)) {
         if (GetConVarBool(hTankDebug))
         {
-            PrintToConsoleAll("[TC] Tank died(3), choosing a new tank");
+            PrintToConsoleAll("[TC] Tank died(3)");
         }
         return Plugin_Stop;
     }
