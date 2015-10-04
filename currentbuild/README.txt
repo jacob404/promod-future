@@ -7,6 +7,8 @@
 - Fixed various double-getups.
 - When a player is rocked and then punched, they will undergo a punch getup animation after the rock animation ends.
 - Witches now deal continuous damage like Hunters and Jockeys. This makes the damage more accurate to her animations.
+- Fire has been fixed. Again.
+- Tanks no longer go AI after third pass, instead they are set on fire. Current burn time is 30 seconds.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.

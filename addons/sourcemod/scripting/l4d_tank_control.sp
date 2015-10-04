@@ -429,6 +429,8 @@ public L4D2_OnWaterMove(client) {
     }
     CreateTimer(0.1, BurnTank, client, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
     tankEnteredWater = true;
+    // If the tank enters water, we now need to prevent him setting herself back on fire. Otherwise, the tank would take damage from BurnTank and the source of fire.
+    SetConVarInt(FindConVar("tank_fire_immunity"), tank_fire_immunity);
 }
 public Action:BurnTank(Handle:timer, any:tank) {
     if (!IsPlayerAlive(tank)) {
