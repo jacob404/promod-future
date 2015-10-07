@@ -9,6 +9,8 @@
 - Witches now deal continuous damage like Hunters and Jockeys. This makes the damage more accurate to her animations.
 - Fire has been fixed. Again.
 - Tanks no longer go AI after third pass, instead they are set on fire. Current burn time is 30 seconds.
+- Fixed !cast. Please ensure that when using sm_add_caster_id (such as in confogl_personalize.cfg), you always use STEAM_1 ids rather than STEAM_0.
+- Usage of !cast: If a user has been added as a caster, they can type !cast (sm_cast) to self-register. Admins can type !caster <username> (sm_caster <username>) to explicitly add someone.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.

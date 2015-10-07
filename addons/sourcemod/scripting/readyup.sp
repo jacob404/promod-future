@@ -16,7 +16,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox",
 	description = "New and improved ready-up plugin.",
-	version = "8.4",
+	version = "8.5",
 	url = ""
 };
 
@@ -100,7 +100,7 @@ public OnPluginStart()
 	HookEvent("player_team", PlayerTeam_Event);
 
 	casterTrie = CreateTrie();
-	allowedCastersTrie = CreateTrie();
+	allowedCastersTrie = CreateArray(64);
 
 	director_no_specials = FindConVar("director_no_specials");
 	god = FindConVar("god");
@@ -119,7 +119,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_toggleready", ToggleReady_Cmd, "Toggle your ready status");
 	RegConsoleCmd("sm_unready", Unready_Cmd, "Mark yourself as not ready if you have set yourself as ready");
 	RegConsoleCmd("sm_return", Return_Cmd, "Return to a valid saferoom spawn if you get stuck during an unfrozen ready-up period");
-    	RegConsoleCmd("sm_cast", Cast_Cmd, "Registers the calling player as a caster so the round will not go live unless they are ready");
+	RegConsoleCmd("sm_cast", Cast_Cmd, "Registers the calling player as a caster so the round will not go live unless they are ready");
 	RegServerCmd("sm_resetcasters", ResetCaster_Cmd, "Used to reset casters between matches.  This should be in confogl_off.cfg or equivalent for your system");
 	RegServerCmd("sm_add_caster_id", AddCasterSteamID_Cmd, "Used for adding casters to the whitelist -- i.e. who's allowed to self-register as a caster");
 
@@ -221,8 +221,8 @@ stock bool:IsIDCaster(const String:AuthID[])
 }
 
 public Action:Cast_Cmd(client, args)
-{	
-    	decl String:buffer[64];
+{
+	decl String:buffer[64];
 	GetClientAuthString(client, buffer, sizeof(buffer));
 	new index = FindStringInArray(allowedCastersTrie, buffer);
 	if (index != -1)
@@ -238,16 +238,16 @@ public Action:Cast_Cmd(client, args)
 }
 
 public Action:Caster_Cmd(client, args)
-{	
+{
 	if (args < 1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_caster <player>");
 		return Plugin_Handled;
 	}
-	
+
     	decl String:buffer[64];
 	GetCmdArg(1, buffer, sizeof(buffer));
-	
+
 	new target = FindTarget(client, buffer, true, false);
 	if (target > 0) // If FindTarget fails we don't need to print anything as it prints it for us!
 	{
@@ -274,7 +274,14 @@ public Action:AddCasterSteamID_Cmd(args)
 {
 	decl String:buffer[128];
 	GetCmdArg(1, buffer, sizeof(buffer));
-	if (buffer[0] != EOS) 
+	if (strcmp(buffer, "STEAM_1") == 0) { // : acts as an argument delimiter.
+		decl String:b3[2];
+		decl String:b5[16];
+		GetCmdArg(3, b3, sizeof(b3)); // Arg 2 is ":"
+		GetCmdArg(5, b5, sizeof(b5)); // Arg 4 is ":"
+		Format(buffer, sizeof(buffer), "%s:%s:%s", buffer, b3, b5);
+	}
+	if (buffer[0] != EOS)
 	{
 		new index = FindStringInArray(allowedCastersTrie, buffer);
 		if (index == -1)
@@ -303,7 +310,7 @@ public Action:Show_Cmd(client, args)
 public Action:NotCasting_Cmd(client, args)
 {
 	decl String:buffer[64];
-	
+
 	if (args < 1) // If no target is specified
 	{
 		GetClientAuthString(client, buffer, sizeof(buffer));
@@ -315,20 +322,20 @@ public Action:NotCasting_Cmd(client, args)
 		new AdminId:id;
 		id = GetUserAdmin(client);
 		new bool:hasFlag = false;
-		
+
 		if (id != INVALID_ADMIN_ID)
 		{
 			hasFlag = GetAdminFlag(id, Admin_Ban); // Check for specific admin flag
 		}
-		
+
 		if (!hasFlag)
 		{
 			ReplyToCommand(client, "Only admins can remove other casters. Use sm_notcasting without arguments if you wish to remove yourself.");
 			return Plugin_Handled;
 		}
-		
+
 		GetCmdArg(1, buffer, sizeof(buffer));
-		
+
 		new target = FindTarget(client, buffer, true, false);
 		if (target > 0) // If FindTarget fails we don't need to print anything as it prints it for us!
 		{
@@ -375,7 +382,7 @@ public Action:Secret_Cmd(client, args)
 
 			return Plugin_Handled;
 		}
-		
+
 	}
 	return Plugin_Continue;
 }
@@ -450,7 +457,7 @@ public SurvFreezeChange(Handle:convar, const String:oldValue[], const String:new
 {
 	ReturnTeamToSaferoom(L4D2Team_Survivor);
 	SetTeamFrozen(L4D2Team_Survivor, GetConVarBool(convar));
-	
+
 }
 
 public Action:L4D_OnFirstSurvivorLeftSafeArea(client)
@@ -856,7 +863,7 @@ stock IsPlayer(client)
 stock GetTeamHumanCount(L4D2Team:team)
 {
 	new humans = 0;
-	
+
 	for (new client = 1; client <= MaxClients; client++)
 	{
 		if (IsClientInGame(client) && !IsFakeClient(client) && L4D2Team:GetClientTeam(client) == team)
@@ -864,7 +871,7 @@ stock GetTeamHumanCount(L4D2Team:team)
 			humans++;
 		}
 	}
-	
+
 	return humans;
 }
 
@@ -888,7 +895,7 @@ stock DoSecrets(client)
 		CreateTimer(5.0, SecretSpamDelay, client);
 		blockSecretSpam[client] = true;
 	}
-		PrintCenterTextAll("\x42\x4f\x4e\x45\x53\x41\x57\x20\x49\x53\x20\x52\x45\x41\x44\x59\x21");
+	PrintCenterTextAll("\x42\x4f\x4e\x45\x53\x41\x57\x20\x49\x53\x20\x52\x45\x41\x44\x59\x21");
 }
 
 public Action:SecretSpamDelay(Handle:timer, any:client)
@@ -922,21 +929,21 @@ EnableEntities() {
 }
 
 
-ActivateEntities(String:className[], String:inputName[]) { 
+ActivateEntities(String:className[], String:inputName[]) {
     new iEntity;
-    
+
     while ( (iEntity = FindEntityByClassname(iEntity, className)) != -1 ) {
         if ( !IsValidEdict(iEntity) || !IsValidEntity(iEntity) ) {
             continue;
         }
-        
+
         AcceptEntityInput(iEntity, inputName);
     }
 }
 
 MakePropsUnbreakable() {
     new iEntity;
-    
+
     while ( (iEntity = FindEntityByClassname(iEntity, "prop_physics")) != -1 ) {
       if ( !IsValidEdict(iEntity) || !IsValidEntity(iEntity) ) {
           continue;
@@ -947,7 +954,7 @@ MakePropsUnbreakable() {
 
 MakePropsBreakable() {
     new iEntity;
-    
+
     while ( (iEntity = FindEntityByClassname(iEntity, "prop_physics")) != -1 ) {
       if ( !IsValidEdict(iEntity) ||  !IsValidEntity(iEntity) ) {
           continue;
