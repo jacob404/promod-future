@@ -1,126 +1,160 @@
-#pragma semicolon 1
- 
 #include <sourcemod>
-#include <sdktools>
-#include <sdkhooks>
-#include <colors>
+#include <l4d2_scoremod>
+#define L4D2UTIL_STOCKS_ONLY 1
+#include <l4d2util>
+#pragma semicolon 1
 
-#define TEAM_SURVIVOR 2
-#define TEAM_INFECTED 3
- 
-#define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
-#define IS_SURVIVOR(%1)         (GetClientTeam(%1) == 2)
-#define IS_INFECTED(%1)         (GetClientTeam(%1) == 3)
-#define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
-#define IS_VALID_SURVIVOR(%1)   (IS_VALID_INGAME(%1) && IS_SURVIVOR(%1))
-#define IS_VALID_INFECTED(%1)   (IS_VALID_INGAME(%1) && IS_INFECTED(%1))
- 
-new infectedDamageGiven[MAXPLAYERS + 1];
-new preTankPerm[MAXPLAYERS + 1];
-new postTankPerm[MAXPLAYERS + 1];
-new bool:isTankInPlay = false;
- 
-public Plugin:myinfo =
-{
-        name = "Damage During Tank",
-        author = "Error",
-        description = "Announce damage dealt to survivors by infected during tanks",
-        version = "0.1"
-};
- 
-public OnPluginStart()
-{
-        HookEvent("round_end", Event_RoundEnd);
-        HookEvent("tank_spawn", Event_TankSpawn);
-        HookEvent("player_death", Event_PlayerDeath);
-}
- 
-public OnClientPutInServer(client)
-{
-        SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-}
- 
-public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damageType)
-{
-        new incap = GetEntProp(victim, Prop_Send, "m_isIncapacitated");
-        if(!isTankInPlay) return Plugin_Continue;
-        if(!IS_SURVIVOR(victim)) return Plugin_Continue;
-        if(incap != 0) return Plugin_Continue;
-		
-        infectedDamageGiven[victim] += RoundFloat(damage);
-        return Plugin_Continue;
-}
- 
-public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
-{
-        if(isTankInPlay == true)
-        {
-          PrintInfectedDamage();
-        }
-        isTankInPlay = false;
-        ResetClientTracking();
-}
- 
-public Event_TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
-{
-        isTankInPlay = true;
-        for(new client = 1; client <= MaxClients; client++)
-        {
-                if(IS_SURVIVOR(client))
-                {
-                        preTankPerm[client] = GetClientHealth(client);
-                }
-        }
+new damageToTank[9];
+new String:playerNames[9][128];
+new Handle:printTankName;
+new Handle:printTankDamage;
+new Handle:printPlayerHB;
+new bool:tankInPlay;
+new tankHealth;
+new lastTankHealth;
+new preTankHB;
+new incapOffset;
+
+public Plugin:myinfo = {
+    name = "Damage During Tank",
+    author = "darkid",
+    description = "Announce damage dealt during tanks",
+    version = "1.4"
 }
 
-ResetClientTracking()
-{
-        for (new client = 1; client <= MaxClients; client++)
-        {
-                infectedDamageGiven[client] = 0;
-                preTankPerm[client] = 0;
-                postTankPerm[client] = 0;
-        }
+public OnPluginStart() {
+    HookEvent("round_start", round_start);
+    HookEvent("tank_spawn", tank_spawn);
+    HookEvent("player_hurt", player_hurt);
+    HookEvent("player_death", tank_death);
+    HookEvent("round_end", round_end);
+
+    printTankDamage = CreateConVar("tankdamage_print", "1", "Announce damage done to tank when it dies, or on round end.");
+    printTankName = CreateConVar("tankdamage_print_name", "1", "Print the name of the tank when it dies.");
+    printPlayerHB = CreateConVar("tankdamage_print_survivor_hb", "1", "Announce damage done to survivor health bonus when the tank dies.");
+
+    playerNames[8] = "Self";
+    tankInPlay = false;
+    incapOffset = FindSendPropInfo("Tank", "m_isIncapacitated");
+    InitSurvivorModelTrie(); // Not necessary, but speeds up IdentifySurvivor() calls.
 }
 
-public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	if (isTankInPlay)
-	{
-		new String:sVictimName[8];
-		GetEventString(event, "victimname", sVictimName, sizeof(sVictimName));
-		if (StrEqual(sVictimName, "Tank")){
-			isTankInPlay = false;
-			PrintInfectedDamage();
-		}
-	}
-}
- 
-PrintInfectedDamage()
-{
-        CPrintToChatAll("Damage dealt to survivors:");
-        for(new client = 1; client <= MaxClients; client++)
-        {
-                if(IS_SURVIVOR(client))
-                {
-                        postTankPerm[client] = GetClientHealth(client);
-                        new tempPerm = preTankPerm[client] - postTankPerm[client];
-                        new tempDmg = infectedDamageGiven[client];
-                        CPrintToChatAll("{olive}%i {default}[{green}%i perm{default}]: {lightgreen}%N", tempDmg, tempPerm, client);
-                }
-        }
-}
-
-/*
-stock PrintToInfected(const String:Message[], any:... )
-{
-    decl String:sPrint[256];
-    VFormat(sPrint, sizeof(sPrint), Message, 2);
- 
-    for (new i = 1; i <= MaxClients; i++) {
-        if (!IS_VALID_INFECTED(i)) { continue; }
- 
-        CPrintToChat(i, "\x01%s", sPrint);
+public round_start(Handle:event, const String:name[], bool:dontBroadcast) {
+    for (new i=0; i<8; i++) {
+        damageToTank[i] = 0;
     }
 }
-*/
+
+public tank_spawn(Handle:event, const String:name[], bool:dontBroadcast) {
+    tankInPlay = true;
+    tankHealth = GetConVarInt(FindConVar("z_tank_health"))*3/2; // Valve are stupid and multiple tank health by 1.5 in versus.
+    lastTankHealth = tankHealth;
+    preTankHB = HealthBonus();
+}
+
+public player_hurt(Handle:event, const String:name[], bool:dontBroadcast) {
+    if (!tankInPlay) return;
+    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    if (GetEntProp(victim, Prop_Send, "m_zombieClass") == 8 && !GetEntData(victim, incapOffset)) { // Tanks while incapped (dying animation) can still "take damage", which calls this.
+        new SurvivorCharacter:survivor = IdentifySurvivor(attacker);
+        if (survivor != SC_NONE) {
+            damageToTank[survivor] += GetEventInt(event, "dmg_health");
+        } else if (victim == attacker) {
+            damageToTank[8] += GetEventInt(event, "dmg_health");
+        }
+        lastTankHealth = GetEventInt(event, "health");
+    }
+}
+
+public tank_death(Handle:event, const String:name[], bool:dontBroadcast) {
+    new tank = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (!IsClientInGame(tank)) return;
+    if (GetEntProp(tank, Prop_Send, "m_zombieClass") != 8) return;
+    TryPrintTankDamage(tank);
+}
+
+public round_end(Handle:event, const String:name[], bool:dontBroadcast) {
+    decl tank;
+    for (new client=1; client<=MaxClients; client++) {
+        if (!IsClientInGame(client)) continue;
+        if (GetEntProp(client, Prop_Send, "m_zombieClass") == 8) {
+            tank = client;
+            break;
+        }
+    }
+    TryPrintTankDamage(tank);
+}
+
+public sortTankDamage(e1, e2, const array[], Handle:handle) {
+    if (damageToTank[e1] > damageToTank[e2]) {
+        return -1;
+    } else if (damageToTank[e1] == damageToTank[e2]) {
+        return 0;
+    } else /*if (damageToTank[e1] < damageToTank[e2])*/ {
+        return 1;
+    }
+}
+
+public TryPrintTankDamage(tank) {
+    if (!tankInPlay) return;
+    tankInPlay = false;
+
+    new sortArray[sizeof(damageToTank)];
+    for (new i=0; i<sizeof(sortArray); i++) {
+        sortArray[i] = i;
+    }
+
+    SortCustom1D(sortArray, sizeof(sortArray), sortTankDamage);
+
+    for (new client=1; client<MaxClients; client++) {
+        if (!IsClientInGame(client)) continue;
+        new SurvivorCharacter:survivor = IdentifySurvivor(client);
+        if (survivor == SC_NONE) continue;
+        decl String:playerName[128];
+        GetClientName(client, playerName, sizeof(playerName));
+        playerNames[survivor] = playerName;
+    }
+
+    if (GetConVarBool(printTankDamage)) {
+        PrintDamageDealtToTank(tank, sortArray);
+    }
+
+    if (GetConVarBool(printPlayerHB)) {
+        PrintHBDamageDealtToSurvivors(HealthBonus());
+    }
+}
+
+PrintDamageDealtToTank(tank, sortArray[]) {
+    new bool:isTankDead = (lastTankHealth <= 0);
+    for (new client=1; client<=MaxClients; client++) {
+        if (!IsClientInGame(client)) continue;
+        if (GetClientTeam(client) == 3) continue; // Don't print survivor damage to tank to the infected team.
+        if (isTankDead) {
+            if (GetConVarBool(printTankName)) {
+                PrintToChat(client, "[SM] Tank (\x03%N\x01) had \x05%d\x01 health remaining", tank, lastTankHealth);
+            } else {
+                PrintToChat(client, "[SM] Tank had \x05%d\x01 health remaining", lastTankHealth);
+            }
+        } else {
+            if (GetConVarBool(printTankName)) {
+                PrintToChat(client, "[SM] Damage dealt to tank (\x03%N\x01):", tank);
+            } else {
+                PrintToChat(client, "[SM] Damage dealt to tank:");
+            }
+        }
+        for (new i=0; i<sizeof(damageToTank); i++) {
+            new j = sortArray[i];
+            if (damageToTank[j] == 0) continue;
+            PrintToChat(client, "\x05%4d\x01 [\x04%.02f%%\x01]:\t\x03%s\x01", damageToTank[j], damageToTank[j]*100.0/tankHealth, playerNames[j]);
+        }
+    }
+}
+
+PrintHBDamageDealtToSurvivors(postTankHB) {
+    for (new client=1; client<=MaxClients; client++) {
+        if (!IsClientInGame(client)) continue;
+        if (GetClientTeam(client) == 2) continue; // Don't print health bonus damage to tank to the survivor team.
+        PrintToChat(client, "[SM] Damage dealt to health bonus:\t\x05%4d\x01", preTankHB-postTankHB);
+    }
+}
