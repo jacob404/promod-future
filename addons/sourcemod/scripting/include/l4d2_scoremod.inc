@@ -27,22 +27,4 @@
  * Get the current health bonus.
  * @return Float health bonus
  */
-native Float:HealthBonus();
-
-// public SharedPlugin:__pl_l4d2_scoremod =
-// {
-//         name = "l4d2_scoremod",
-//         file = "l4d2_scoremod.smx",
-// #if defined REQUIRE_PLUGIN
-//         required = 1,
-// #else
-//         required = 0,
-// #endif
-// };
-// 
-// public __pl_l4d2_scoremod_SetNTVOptional()
-// {
-//     MarkNativeAsOptional("HealthBonus");
-// }
-
-// vim: ft=sourcepawn et sw=8
+native HealthBonus();
