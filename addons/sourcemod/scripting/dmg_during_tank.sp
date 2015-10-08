@@ -29,7 +29,7 @@ public OnPluginStart() {
     HookEvent("player_death", tank_death);
     HookEvent("round_end", round_end);
 
-    printTankDamage = CreateConVar("tankdamage_print", "1", "Announce damage done to tank when it dies, or on round end.");
+    printTankDamage = CreateConVar("tankdamage_print", "1", "Announce damage done to tank when it dies, or on round end. If set to 2, will also print to the infected.");
     printTankName = CreateConVar("tankdamage_print_name", "1", "Print the name of the tank when it dies.");
     printPlayerHB = CreateConVar("tankdamage_print_survivor_hb", "1", "Announce damage done to survivor health bonus when the tank dies.");
 
@@ -129,7 +129,7 @@ PrintDamageDealtToTank(tank, sortArray[]) {
     new bool:isTankDead = (lastTankHealth <= 0);
     for (new client=1; client<=MaxClients; client++) {
         if (!IsClientInGame(client)) continue;
-        if (GetClientTeam(client) == 3) continue; // Don't print survivor damage to tank to the infected team.
+        if (GetConVarInt(printTankDamage) !=2 && GetClientTeam(client) == 3) continue; // Don't print survivor damage to tank to the infected team.
         if (isTankDead) {
             if (GetConVarBool(printTankName)) {
                 PrintToChat(client, "[SM] Tank (\x03%N\x01) had \x05%d\x01 health remaining", tank, lastTankHealth);
