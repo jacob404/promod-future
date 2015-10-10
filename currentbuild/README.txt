@@ -3,7 +3,7 @@
 - Fixed everyone being warped when only one person attempted to leave saferoom during readyup.
 - Fixed a way that infected were still able to skip death cam.
 - Fixed tanks dealing self-damage with hittables.
-- Added AutoPause: Game automatically pauses when a player crashes. When a player returns, their spawn timer is restored.
+- Added AutoPause: Game automatically pauses when a player crashes. If an infected player crashes, their spawn timer is restored upon rejoining.
 - Fixed various double-getups.
 - When a player is rocked and then punched, they will undergo a punch getup animation after the rock animation ends.
 - Witches now deal continuous damage like Hunters and Jockeys. This makes the damage more accurate to her animations.
@@ -15,6 +15,7 @@
 - Votes can now be called 40s after map change or once 6 players have loaded.
 - Casters are given access to sv_cheats commands, such as fog_enable, mat_fullbright, or mat_postprocess_enable. Cheat cvars will be reset upon joining a team.
 - Survivors can no longer shove other survivors, which slowed them and shook their screen.
+- Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
