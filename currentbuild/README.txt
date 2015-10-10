@@ -14,6 +14,7 @@
 - After the tank fight, the infected team will now see damage dealt to health bonus, rather than damage dealt to tank. Spectators see both.
 - Votes can now be called 40s after map change or once 6 players have loaded.
 - Casters are given access to sv_cheats commands, such as fog_enable, mat_fullbright, or mat_postprocess_enable. Cheat cvars will be reset upon joining a team.
+- Survivors can no longer shove other survivors, which slowed them and shook their screen.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
