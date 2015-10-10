@@ -45,6 +45,7 @@ new Handle:god;
 new Handle:sb_stop;
 new Handle:survivor_limit;
 new Handle:z_max_player_zombies;
+new Handle:infinite_ammo;
 
 new Handle:casterTrie;
 new Handle:liveForward;
@@ -98,11 +99,12 @@ public OnPluginStart()
 
 	HookEvent("round_start", RoundStart_Event);
 	HookEvent("player_team", PlayerTeam_Event);
-
+	
 	casterTrie = CreateTrie();
 	allowedCastersTrie = CreateArray(64);
 
 	director_no_specials = FindConVar("director_no_specials");
+	infinite_ammo = FindConVar("sv_infinite_primary_ammo");
 	god = FindConVar("god");
 	sb_stop = FindConVar("sb_stop");
 	survivor_limit = FindConVar("survivor_limit");
@@ -921,11 +923,13 @@ public Action:killSound(Handle:timer)
 DisableEntities() {
   ActivateEntities("prop_door_rotating", "SetUnbreakable");
   MakePropsUnbreakable();
+  SetConVarInt(infinite_ammo, 1);
 }
 
 EnableEntities() {
   ActivateEntities("prop_door_rotating", "SetBreakable");
   MakePropsBreakable();
+  SetConVarInt(infinite_ammo, 0);
 }
 
 
