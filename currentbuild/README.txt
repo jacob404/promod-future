@@ -16,6 +16,7 @@
 - Casters are given access to sv_cheats commands, such as fog_enable, mat_fullbright, or mat_postprocess_enable. Cheat cvars will be reset upon joining a team.
 - Survivors can no longer shove other survivors, which slowed them and shook their screen.
 - Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
+- You will now auto bhop as jockey if you are 0.05 seconds or less too early with your bhop attempt. In other words the timing window for bhopping as a jockey was slightly extended.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
