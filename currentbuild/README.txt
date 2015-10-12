@@ -17,6 +17,7 @@
 - Survivors can no longer shove other survivors, which slowed them and shook their screen.
 - Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
 - You will now auto bhop as jockey if you are 0.05 seconds or less too early with your bhop attempt. In other words the timing window for bhopping as a jockey was slightly extended.
+- Survivors are no longer slowed / held in place after being cleared from a smoker, they can now instantly move at full speed.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
