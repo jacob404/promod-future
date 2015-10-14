@@ -8,18 +8,22 @@ new bool:AllowJingle = true;
 new bool:JingleCooldown = false;
 new bool:SurvivorSnow = false;
 new bool:InfectedSnow = false;
+new bool:isDecember = false;
 
 public Plugin:myinfo =
 {
 	name = "Christmas Surprise",
 	author = "Jacob",
 	description = "Happy Holidays",
-	version = "1.0",
+	version = "1.1",
 	url = "https://github.com/jacob404/myplugins"
 }
 
 public OnPluginStart()
 {
+	decl String:time[64];
+	FormatTime(time, sizeof(time), "%m", GetTime());
+	isDecember = (strcmp(time, "12") == 0);
 	RegConsoleCmd("sm_jingle", PlayMusic_Cmd, "Starts a christmas jingle.");
 	RegConsoleCmd("sm_unjingle", StopMusic_Cmd, "Stops music clientside.");
 	RegConsoleCmd("sm_nosnow", KillSnow_Cmd, "Calls a vote to disable snow.");
@@ -34,6 +38,7 @@ public OnMapStart()
 
 public Action:MakeSnow(Handle:timer)
 {
+	if (!isDecember) return;
 	new iSnow = -1;
 	while ((iSnow = FindEntityByClassname(iSnow , "func_precipitation")) != INVALID_ENT_REFERENCE) AcceptEntityInput(iSnow, "Kill");
 	iSnow = -1;
@@ -61,6 +66,7 @@ public Action:MakeSnow(Handle:timer)
 
 public OnRoundIsLive()
 {
+	if (!isDecember) return;
 	for (new i = 1; i <= MaxClients; i++)
 	if (IsClientInGame(i) && !IsFakeClient(i))
 	StopSound(i, SNDCHAN_AUTO, "music/flu/jukebox/all_i_want_for_xmas.wav");
@@ -72,7 +78,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	AllowJingle = true;
 	CreateTimer(0.7, MakeSnow);
 	SurvivorSnow = false;
-	InfectedSnow = false;	
+	InfectedSnow = false;
 }
 
 public Action:MusicTimer(Handle:timer)
@@ -82,6 +88,7 @@ public Action:MusicTimer(Handle:timer)
 
 public Action:PlayMusic_Cmd(client, args)
 {
+	if (!isDecember) return;
 	if(AllowJingle && !JingleCooldown)
 	{
 		EmitSoundToAll("music/flu/jukebox/all_i_want_for_xmas.wav", _, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 1.0);
@@ -98,6 +105,7 @@ public Action:StopMusic_Cmd(client, args)
 
 public Action:KillSnow_Cmd(client, args)
 {
+	if (!isDecember) return;
 	new Team = GetClientTeam(client);
 	if(Team == 2 && SurvivorSnow == false)
 	{
