@@ -99,7 +99,7 @@ public OnPluginStart()
 
 	HookEvent("round_start", RoundStart_Event);
 	HookEvent("player_team", PlayerTeam_Event);
-	
+
 	casterTrie = CreateTrie();
 	allowedCastersTrie = CreateArray(64);
 
@@ -940,6 +940,10 @@ ActivateEntities(String:className[], String:inputName[]) {
         if ( !IsValidEdict(iEntity) || !IsValidEntity(iEntity) ) {
             continue;
         }
+        // From the VDC, 524288 : Start Unbreakable
+        if (strcmp(inputName, "SetBreakable") == 0 && GetEntityFlags(iEntity) & (1 << 19) == (1 << 19)) {
+	        continue;
+	    }
 
         AcceptEntityInput(iEntity, inputName);
     }

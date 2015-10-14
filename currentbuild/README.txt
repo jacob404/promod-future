@@ -18,6 +18,8 @@
 - Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
 - You will now auto bhop as jockey if you are 0.05 seconds or less too early with your bhop attempt. In other words the timing window for bhopping as a jockey was slightly extended.
 - Survivors are no longer slowed / held in place after being cleared from a smoker, they can now instantly move at full speed.
+- Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
+- Fixed a bug where unbreakable doors could become breakable.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
