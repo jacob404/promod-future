@@ -90,7 +90,10 @@ for plugin in plugins.keys():
 		for config in plugins_files:
 			plugins_files[config].append(plugin)
 			variable_files[config][plugin] = {}
-	elif global_load == 'non1v1':
+	elif global_load == 'skip':
+		continue
+	elif global_load in ['no1v1', 'non1v1']:
+		value = raw_input('What should this variable be set to? ')
 		for config in plugins_files:
 			if '1v1' in config or config == 'deadman':
 				continue
@@ -111,13 +114,23 @@ for plugin in plugins.keys():
 			for config in variable_files:
 				if plugin in plugins_files[config]:
 					variable_files[config][plugin][cvar] = value
+		elif global_set == 'skip':
+			continue
+		elif global_set in ['no1v1', 'non1v1']:
+			value = raw_input('What should this variable be set to? ')
+			for config in plugins_files:
+				if '1v1' in config or config == 'deadman':
+					continue
+				if plugin not in plugins_files[config]:
+					continue
+				variable_files[config][plugin][cvar] = value
 		else:
 			for config in sorted(variable_files.keys()):
-				print plugin_files[config]
 				if plugin not in plugins_files[config]:
 					continue
 				value = raw_input('Setting for config '+config+'? ')
-				variable_files[config][plugin][cvar] = value
+				if value != 'skip':
+					variable_files[config][plugin][cvar] = value
 # Done with settings, now write to files.
 for config in sorted(plugins_files.keys()):
 	f = open('currentbuild/Update/cfg/cfgogl/'+config+'/confogl_plugins.cfg', 'wb')
@@ -125,10 +138,18 @@ for config in sorted(plugins_files.keys()):
 	footer = plugins_files[config].pop(0)
 	f.write(header)
 	f.write('// Pro Mod Plugins\n')
+	holdout_bonus_status = 0
 	for plugin in sorted(plugins_files[config]):
 		if plugin == '':
 			continue
-		f.write('sm plugins load optional/'+plugin+'\n')
+		elif plugin == 'holdout_bonus.smx' and holdout_bonus_status != 2:
+			holdout_bonus_status = 1
+		elif plugin == 'l4d2_penalty_bonus.smx' and holdout_bonus_status == 1:
+			holdout_bonus_status = 2
+			f.write('sm plugins load optional/'+plugin+'\n')
+			f.write('sm plugins load optional/holdout_bonus.smx // Needs to be loaded after l4d2_penalty_bonus.\n')
+		else:
+			f.write('sm plugins load optional/'+plugin+'\n')
 	f.write(footer)
 	f.close()
 
@@ -142,6 +163,8 @@ for config in sorted(variable_files.keys()):
 	del variable_files[config]['footer']
 	f.write(header)
 	for plugin in sorted(variable_files[config].keys()):
+		if plugin not in loaded_plugins and len(variable_files[config][plugin]) == 0:
+			continue
 		f.write('\n// ['+plugin+']')
 		if plugin in loaded_plugins:
 			f.write('\n'+variable_files[config][plugin])
