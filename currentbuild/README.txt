@@ -20,6 +20,7 @@
 - Survivors are no longer slowed / held in place after being cleared from a smoker, they can now instantly move at full speed.
 - Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
 - Fixed a bug where unbreakable doors could become breakable.
+- Health bonus (or damage bonus) is now displayed on the spechud.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.

@@ -225,7 +225,7 @@ PluginDisable()
 
 public Native_GetBonus(Handle:plugin, numParams)
 {
-	return _:SM_CalculateScore();
+	return SM_CalculateScore();
 }
 
 public Action:SM_DoorClose_Event(Handle:event, const String:name[], bool:dontBroadcast)
@@ -261,8 +261,8 @@ public Action:SM_RoundEnd_Event(Handle:event, const String:name[], bool:dontBroa
 
 		// If the score is nonzero, trust the SurvivalBonus var.
 		SM_iFirstScore = (SM_iFirstScore ? GetConVarInt(SM_hSurvivalBonus) *iAliveCount : 0);
-		PrintToChatAll("\x01[ScoreMod] Round 1 Bonus: \x05%d\x01", SM_iFirstScore);
-		if (GetConVarBool(SM_hCustomMaxDistance) && GetCustomMapMaxScore() > -1) PrintToChatAll("\x01[ScoreMod] Custom Max Distance: \x05%d\x01", GetCustomMapMaxScore());
+		PrintToChatAll("\x01[SM] Round 1 Bonus: \x05%d\x01", SM_iFirstScore);
+		if (GetConVarBool(SM_hCustomMaxDistance) && GetCustomMapMaxScore() > -1) PrintToChatAll("\x01[SM] Custom Max Distance: \x05%d\x01", GetCustomMapMaxScore());
 	}
 	else if (SM_bIsSecondRoundStarted && !SM_bIsSecondRoundOver)
 	{
@@ -273,12 +273,12 @@ public Action:SM_RoundEnd_Event(Handle:event, const String:name[], bool:dontBroa
 		new iScore = RoundToFloor(SM_CalculateAvgHealth(iAliveCount) * SM_fMapMulti * SM_fHBRatio + 400 * SM_fMapMulti * SM_fSurvivalBonusRatio);
 		// If the score is nonzero, trust the SurvivalBonus var.
 		iScore = iScore ? GetConVarInt(SM_hSurvivalBonus) * iAliveCount : 0;
-		PrintToChatAll("\x01[ScoreMod] Round 1 Bonus: \x05%d\x01", SM_iFirstScore);
-		PrintToChatAll("\x01[ScoreMod] Round 2 Bonus: \x05%d\x01", iScore);
+		PrintToChatAll("\x01[SM] Round 1 Bonus: \x05%d\x01", SM_iFirstScore);
+		PrintToChatAll("\x01[SM] Round 2 Bonus: \x05%d\x01", iScore);
 		iDifference = SM_iFirstScore - iScore;
 		if (iScore > SM_iFirstScore) iDifference = (~iDifference) + 1;
-		PrintToChatAll("\x01[ScoreMod] Difference: \x05%d\x01", iDifference);
-		if (GetConVarBool(SM_hCustomMaxDistance) && GetCustomMapMaxScore() > -1) PrintToChatAll("\x01[ScoreMod] Custom Max Distance: \x05%d\x01", GetCustomMapMaxScore());
+		PrintToChatAll("\x01[SM] Difference: \x05%d\x01", iDifference);
+		if (GetConVarBool(SM_hCustomMaxDistance) && GetCustomMapMaxScore() > -1) PrintToChatAll("\x01[SM] Custom Max Distance: \x05%d\x01", GetCustomMapMaxScore());
 	}
 }
 public Action:SM_RoundStart_Event(Handle:event, const String:name[], bool:dontBroadcast)

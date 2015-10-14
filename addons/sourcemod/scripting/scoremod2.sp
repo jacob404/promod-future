@@ -8,7 +8,7 @@
 
 #define SM2_DEBUG    0
 
-/** 
+/**
 	Bibliography:
 	'l4d2_scoremod' by CanadaRox, ProdigySim
 	'damage_bonus' by CanadaRox, Stabby
@@ -50,7 +50,7 @@ public Plugin:myinfo =
 	url = "https://github.com/ConfoglTeam/ProMod"
 };
 
-public APLRes:AskPluginLoad2(Handle:plugin, bool:late, String:error[], errMax) 
+public APLRes:AskPluginLoad2(Handle:plugin, bool:late, String:error[], errMax)
 {
 	bLateLoad = late;
 	return APLRes_Success;
@@ -75,9 +75,9 @@ public OnPluginStart()
 	RegConsoleCmd("sm_bonus", CmdBonus);
 	RegConsoleCmd("sm_mapinfo", CmdMapInfo);
 
-	if (bLateLoad) 
+	if (bLateLoad)
 	{
-		for (new i = 1; i <= MaxClients; i++) 
+		for (new i = 1; i <= MaxClients; i++)
 		{
 			if (!IsClientInGame(i))
 				continue;
@@ -85,6 +85,8 @@ public OnPluginStart()
 			OnClientPutInServer(i);
 		}
 	}
+
+	CreateNative("DamageBonus", Native_GetBonus);
 }
 
 public OnPluginEnd()
@@ -147,6 +149,14 @@ public OnRoundStart()
 		iTempHealth[i] = 0;
 	}
 	bRoundOver = false;
+}
+
+public Native_GetBonus(Handle:plugin, numParams)
+{
+	new Float:fHealthBonus = GetSurvivorHealthBonus();
+	new Float:fDamageBonus = GetSurvivorDamageBonus();
+	new Float:fPillsBonus = GetSurvivorPillBonus();
+	return RoundToFloor(fHealthBonus + fDamageBonus + fPillsBonus);
 }
 
 public Action:CmdBonus(client, args)
@@ -239,7 +249,7 @@ public OnTakeDamagePost(victim, attacker, inflictor, Float:damage, damagetype)
 {
 	if (!IsSurvivor(victim) || !IsAnyInfected(attacker))
 		return;
-		
+
 #if SM2_DEBUG
 	PrintToChatAll("\x03%N\x01\x05 lost %i\x01 temp HP after being attacked(arg damage: \x03%.1f\x01)", victim, iTempHealth[victim] - (IsPlayerAlive(victim) ? GetSurvivorTemporaryHealth(victim) : 0), damage);
 #endif
@@ -287,7 +297,7 @@ public Action:L4D2_OnEndVersusModeRound(bool:countSurvivors)
 	return Plugin_Continue;
 }
 
-public Action:PrintRoundEndStats(Handle:timer) 
+public Action:PrintRoundEndStats(Handle:timer)
 {
 	for (new i = 0; i <= InSecondHalfOfRound(); i++)
 	{
@@ -330,7 +340,7 @@ Float:GetSurvivorDamageBonus()
 }
 
 Float:GetSurvivorPillBonus()
-{			
+{
 	new pillsBonus;
 	new survivorCount;
 	for (new i = 1; i <= MaxClients && survivorCount < iTeamSize; i++)
@@ -379,7 +389,7 @@ bool:IsAnyInfected(entity)
 	{
 		decl String:classname[64];
 		GetEdictClassname(entity, classname, sizeof(classname));
-		if (StrEqual(classname, "infected") || StrEqual(classname, "witch")) 
+		if (StrEqual(classname, "infected") || StrEqual(classname, "witch"))
 		{
 			return true;
 		}

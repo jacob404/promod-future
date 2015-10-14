@@ -7,10 +7,15 @@
 #include <readyup>
 #include <pause>
 #include <colors>
+#include <l4d2_scoremod>
+#include <scoremod2>
 
 #define SPECHUD_DRAW_INTERVAL   0.5
 
 #define ZOMBIECLASS_NAME(%0) (L4D2SI_Names[(%0)])
+
+#define L4D2_ScoreMod 1
+#define ScoreMod2 2
 
 enum L4D2Gamemode
 {
@@ -53,12 +58,14 @@ new bool:bSpecHudHintShown[MAXPLAYERS + 1];
 new bool:bTankHudActive[MAXPLAYERS + 1];
 new bool:bTankHudHintShown[MAXPLAYERS + 1];
 
+new scoremode; // Tracks which scoremod plugin is loaded.
+
 public Plugin:myinfo =
 {
 	name = "Hyper-V HUD Manager [Public Version]",
-	author = "Visor",
+	author = "Visor, darkid",
 	description = "Provides different HUDs for spectators",
-	version = "2.9",
+	version = "2.10",
 	url = "https://github.com/Attano/smplugins"
 };
 
@@ -71,6 +78,32 @@ public OnPluginStart()
 	RegConsoleCmd("sm_tankhud", ToggleTankHudCmd);
 
 	CreateTimer(SPECHUD_DRAW_INTERVAL, HudDrawTimer, _, TIMER_REPEAT);
+}
+
+public OnAllPluginsLoaded()
+{
+	if (LibraryExists("l4d2_scoremod")) {
+		scoremode |= L4D2_ScoreMod;
+	}
+	if (LibraryExists("scoremod2")) {
+		scoremode |= ScoreMod2;
+	}
+}
+public OnLibraryRemoved(const String:name[])
+{
+	if (strcmp(name, "l4d2_scoremod") == 0) {
+		scoremode |= ~L4D2_ScoreMod;
+	} else if (strcmp(name, "scoremod2") == 0) {
+		scoremode |= ~ScoreMod2;
+	}
+}
+public OnLibraryAdded(const String:name[])
+{
+	if (strcmp(name, "l4d2_scoremod") == 0) {
+		scoremode |= L4D2_ScoreMod;
+	} else if (strcmp(name, "scoremod2") == 0) {
+		scoremode |= ScoreMod2;
+	}
 }
 
 public OnClientAuthorized(client, const String:auth[])
@@ -117,6 +150,7 @@ public Action:HudDrawTimer(Handle:hTimer)
 		FillInfectedInfo(specHud);
 		FillTankInfo(specHud);
 		FillGameInfo(specHud);
+		FillHBInfo(specHud);
 
 		for (new i = 1; i <= MaxClients; i++)
 		{
@@ -444,6 +478,26 @@ FillGameInfo(Handle:hSpecHud)
 		Format(info, sizeof(info), "Round: %s", buffer);
 		DrawPanelText(hSpecHud, info);
 	}
+}
+
+FillHBInfo(Handle:hSpecHud) {
+	decl String:type[64];
+	new bonus;
+	if (scoremode & L4D2_ScoreMod == L4D2_ScoreMod) {
+		type = "Health";
+		bonus = HealthBonus();
+	} else if (scoremode & ScoreMod2 == ScoreMod2) {
+		type = "Damage";
+		bonus = DamageBonus();
+	} else {
+		return;
+	}
+
+	DrawPanelText(hSpecHud, " ");
+	DrawPanelText(hSpecHud, "->4. Bonus");
+	new String:bonusString[128];
+	Format(bonusString, sizeof(bonusString), "%s Bonus: %d", type, bonus);
+	DrawPanelText(hSpecHud, bonusString);
 }
 
 /* Stocks */
