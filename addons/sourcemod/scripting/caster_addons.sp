@@ -43,6 +43,8 @@ public OnTeamChange(Handle:event, String:name[], bool:dontBroadcast)
 
 public Action:CasterCheck(Handle:timer, any:client)
 {
+    if (!IsClientInGame(client)) return;
+    if (IsFakeClient(client)) return;
     if (IsClientCaster(client))
     {
         CPrintToChat(client, "{blue}[{default}Cast{blue}]{default}: Unregister from Casting before Playing first.");
