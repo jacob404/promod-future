@@ -15,6 +15,7 @@
 - Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
 - Fixed a bug where unbreakable doors could become breakable.
 - Health bonus (or damage bonus) is now displayed on the spechud.
+- Survivors will now take a maximum of 30 fall damage if they are pounced or jockeyed while on the no mercy 3 sewer ladder.
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
