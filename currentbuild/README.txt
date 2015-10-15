@@ -1,19 +1,13 @@
 4.5
 - Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
-- Fixed everyone being warped when only one person attempted to leave saferoom during readyup.
-- Fixed a way that infected were still able to skip death cam.
 - Fixed tanks dealing self-damage with hittables.
 - Added AutoPause: Game automatically pauses when a player crashes. If an infected player crashes, their spawn timer is restored upon rejoining.
 - Fixed various double-getups.
 - When a player is rocked and then punched, they will undergo a punch getup animation after the rock animation ends.
 - Witches now deal continuous damage like Hunters and Jockeys. This makes the damage more accurate to her animations.
-- Fire has been fixed. Again.
 - Tanks no longer go AI after third pass, instead they are set on fire. Current burn time is 30 seconds.
-- Fixed !cast. Please ensure that when using sm_add_caster_id (such as in confogl_personalize.cfg), you always use STEAM_1 ids rather than STEAM_0.
-- Usage of !cast: If a user has been added as a caster, they can type !cast (sm_cast) to self-register. Admins can type !caster <username> (sm_caster <username>) to explicitly add someone.
 - After the tank fight, the infected team will now see damage dealt to health bonus, rather than damage dealt to tank. Spectators see both.
 - Votes can now be called 40s after map change or once 6 players have loaded.
-- Casters are given access to sv_cheats commands, such as fog_enable, mat_fullbright, or mat_postprocess_enable. Cheat cvars will be reset upon joining a team.
 - Survivors can no longer shove other survivors, which slowed them and shook their screen.
 - Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
 - You will now auto bhop as jockey if you are 0.05 seconds or less too early with your bhop attempt. In other words the timing window for bhopping as a jockey was slightly extended.
@@ -21,6 +15,15 @@
 - Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
 - Fixed a bug where unbreakable doors could become breakable.
 - Health bonus (or damage bonus) is now displayed on the spechud.
+
+4.4.2
+- Fixed some unbreakable doors becoming breakable on round start.
+- Fixed fire, again. (Molotovs have not been re-added yet)
+- Fixed a way that infected were still able to skip their death cams.
+- Fixed all survivors being warped when only one attempted to leave saferoom during readyup.
+- Fixed !cast. Please ensure that when using sm_add_caster_id (such as in confogl_personalize.cfg), you always use STEAM_1 ids rather than STEAM_0.
+- Usage of !cast: If a user has been added as a caster, they can type !cast (sm_cast) to self-register. Admins can type !caster <username> (sm_caster <username>) to explicitly add someone.
+- Casters now have access to sv_cheats commands, such as fog_enable, mat_fullbright, or mat_postprocess_enable. Cheat cvars will be reset upon joining a team.
 
 4.4.1
 - Fixed some instances of survivors dropping their weapons when punched by tank on high tick rate servers.
