@@ -130,7 +130,7 @@ public PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 		decl Float:scale;
 		decl Float:modifier;
 		GetScaleAndModifier(scale, modifier, weapon, damage);
-		ApplySlowdown(client, modifier * scale * slowdown);
+		ApplySlowdown(client, 1 - modifier * scale * slowdown);
 	}
 }
 
