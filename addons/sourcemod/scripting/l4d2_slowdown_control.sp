@@ -51,7 +51,6 @@ public OnPluginStart()
 	hCvarSdInwaterSurvivor = CreateConVar("l4d2_slowdown_water_survivors", "-1", "Maximum slowdown in the water for the Survivors outside of Tank fights (-1: native slowdown; 0.0: No slowdown, 0.01-2.0: 1%%-200%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 2.0);
 	hCvarSdInwaterDuringTank = CreateConVar("l4d2_slowdown_water_survivors_during_tank", "0", "Maximum slowdown in the water for the Survivors during Tank fights (0: ignore setting; 0.01-2.0: 1%%-200%% slowdown)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 
-	 // Each of these damage values corresponds to the same amount of slowdown, from that given weapon.
 	hCvarSdPistolMod = CreateConVar("l4d2_slowdown_pistol_percent", "0.0", "Pistols cause this much slowdown * l4d2_slowdown_gunfire at maximum damage.");
 	hCvarSdDeagleMod = CreateConVar("l4d2_slowdown_deagle_percent", "0.1", "Deagles cause this much slowdown * l4d2_slowdown_gunfire at maximum damage.");
 	hCvarSdUziMod = CreateConVar("l4d2_slowdown_uzi_percent", "0.8", "Unsilenced uzis cause this much slowdown * l4d2_slowdown_gunfire at maximum damage.");
