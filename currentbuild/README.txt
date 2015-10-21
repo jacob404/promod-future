@@ -10,12 +10,16 @@
 - Votes can now be called 40s after map change or once 6 players have loaded.
 - Survivors can no longer shove other survivors, which slowed them and shook their screen.
 - Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
-- You will now auto bhop as jockey if you are 0.05 seconds or less too early with your bhop attempt. In other words the timing window for bhopping as a jockey was slightly extended.
+- The bunny-hopping window as jockey has been extended by .05 seconds.
 - Survivors are no longer slowed / held in place after being cleared from a smoker, they can now instantly move at full speed.
 - Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
-- Fixed a bug where unbreakable doors could become breakable.
-- Health bonus (or damage bonus) is now displayed on the spechud.
 - Survivors will now take a maximum of 30 fall damage if they are pounced or jockeyed while on the no mercy 3 sewer ladder.
+- Updates to spechud:
+-- Bonus (Health or Damage) is now visible
+-- Changed 'P', 'DP', 'M', and 'DE' to 'Pistol', 'Dual Pistols', 'Melee', and 'Deagle' respectively
+-- Added health for ghost infected
+- Who will become tank is now printed to casters on round start.
+- Spawns out of saferoom can now be checked manually by all players by typing !spawns (sm_spawns). They will still be automatically printed to the survivors on round start.
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
