@@ -2,7 +2,6 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <left4downtown>
 #undef REQUIRE_PLUGIN
 #include <readyup>
 #define REQUIRE_PLUGIN
@@ -13,22 +12,11 @@
 #define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
 #define IS_VALID_SURVIVOR(%1)   (IS_VALID_INGAME(%1) && IS_SURVIVOR(%1))
 #define IS_VALID_INFECTED(%1)   (IS_VALID_INGAME(%1) && IS_INFECTED(%1))
-#define IS_SURVIVOR_ALIVE(%1)   (IS_VALID_SURVIVOR(%1) && IsPlayerAlive(%1))
-#define IS_INFECTED_ALIVE(%1)   (IS_VALID_INFECTED(%1) && IsPlayerAlive(%1))
-
-#define ZC_SMOKER               1
-#define ZC_BOOMER               2
-#define ZC_HUNTER               3
-#define ZC_SPITTER              4
-#define ZC_JOCKEY               5
-#define ZC_CHARGER              6
-#define ZC_WITCH                7
-#define ZC_TANK                 8
 
 #define MAXSPAWNS               8
 
 new     bool:   g_bReadyUpAvailable     = false;
-
+new     bool:   g_bRoundIsLive          = false;
 
 new const String: g_csSIClassName[][] =
 {
@@ -44,7 +32,7 @@ new const String: g_csSIClassName[][] =
 };
 
 
-public Plugin:myinfo = 
+public Plugin:myinfo =
 {
     name = "Special Infected Class Announce",
     author = "Tabun",
@@ -56,6 +44,10 @@ public Plugin:myinfo =
 public OnAllPluginsLoaded()
 {
     g_bReadyUpAvailable = LibraryExists("readyup");
+    g_bRoundIsLive = false;
+    RegConsoleCmd("sm_spawns", PrintSpawns);
+    HookEvent("player_left_start_area", RoundEnd);
+    HookEvent("round_end", RoundEnd);
 }
 public OnLibraryRemoved(const String:name[])
 {
@@ -69,61 +61,59 @@ public OnLibraryAdded(const String:name[])
 public OnRoundIsLive()
 {
     // announce SI classes up now
-    AnnounceSIClasses();
+    AnnounceSIClasses(-1);
+    g_bRoundIsLive = true;
 }
 
-public Action: L4D_OnFirstSurvivorLeftSafeArea( client )
-{   
+public RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+{
     // if no readyup, use this as the starting event
     if (!g_bReadyUpAvailable) {
-        AnnounceSIClasses();
+        AnnounceSIClasses(-1);
+        g_bRoundIsLive = true;
     }
 }
 
-stock AnnounceSIClasses()
+public RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    g_bRoundIsLive = false;
+}
+
+public Action:PrintSpawns(client, args) {
+    if (g_bRoundIsLive) return;
+    AnnounceSIClasses(client);
+}
+
+// If client = -1, print to all survivors.
+stock AnnounceSIClasses(client)
 {
     // get currently active SI classes
     new iSpawns;
-    new iSpawnClass[MAXSPAWNS+1];
-    
-    for (new i = 1; i <= MaxClients && iSpawns < MAXSPAWNS; i++) {
-        if (!IS_INFECTED_ALIVE(i)) { continue; }
+    new String:spawnList[256] = "\x01Special Infected\x04";
 
-        iSpawnClass[iSpawns] = GetEntProp(i, Prop_Send, "m_zombieClass");
+    for (new i = 1; i <= MaxClients && iSpawns < MAXSPAWNS; i++) {
+        if (!IS_VALID_INFECTED(i)) { continue; }
+
+        if (iSpawns == 0) {
+            Format(spawnList, sizeof(spawnList), "%s: \x04%s\x01", spawnList, g_csSIClassName[GetEntProp(i, Prop_Send, "m_zombieClass")]);
+        } else {
+            Format(spawnList, sizeof(spawnList), "%s, \x04%s\x01", spawnList, g_csSIClassName[GetEntProp(i, Prop_Send, "m_zombieClass")]);
+        }
         iSpawns++;
     }
 
-    // print classes, according to amount of spawns found
-    switch (iSpawns) {
-        case 4: {
-            PrintToSurvivors(
-                    "\x01Special Infected: \x04%s\x01, \x04%s\x01, \x04%s\x01, \x04%s\x01.",
-                    g_csSIClassName[iSpawnClass[0]],
-                    g_csSIClassName[iSpawnClass[1]],
-                    g_csSIClassName[iSpawnClass[2]],
-                    g_csSIClassName[iSpawnClass[3]]
-                );
+    if (iSpawns == 0) {
+        if (client == -1) {
+            PrintToSurvivors("There are no special infected.");
+        } else {
+            PrintToChat(client, "There are no special infected.");
         }
-        case 3: {
-            PrintToSurvivors(
-                    "\x01Special Infected: \x04%s\x01, \x04%s\x01, \x04%s\x01.",
-                    g_csSIClassName[iSpawnClass[0]],
-                    g_csSIClassName[iSpawnClass[1]],
-                    g_csSIClassName[iSpawnClass[2]]
-                );
-        }
-        case 2: {
-            PrintToSurvivors(
-                    "\x01Special Infected: \x04%s\x01, \x04%s\x01.",
-                    g_csSIClassName[iSpawnClass[0]],
-                    g_csSIClassName[iSpawnClass[1]]
-                );
-        }
-        case 1: {
-            PrintToSurvivors(
-                    "\x01Special Infected: \x04%s\x01.",
-                    g_csSIClassName[iSpawnClass[0]]
-                );
+    } else {
+        Format(spawnList, sizeof(spawnList), "%s.", spawnList);
+        if (client == -1) {
+            PrintToSurvivors(spawnList);
+        } else {
+            PrintToChat(client, spawnList);
         }
     }
 }
