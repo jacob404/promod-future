@@ -6,6 +6,7 @@
 #include <l4d2util>
 #include <l4d2_direct>
 #include <left4downtown>
+#include <readyup>
 #include <colors>
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
@@ -493,7 +494,7 @@ stock PrintToInfected(const String:Message[], any:... )
 
     for (new i = 1; i <= MaxClients; i++)
     {
-        if (!IS_VALID_INFECTED(i))
+        if (!IS_VALID_INFECTED(i) && !IsClientCaster(i))
         {
             continue;
         }
@@ -501,6 +502,7 @@ stock PrintToInfected(const String:Message[], any:... )
         CPrintToChat(i, "{default}%s", sPrint);
     }
 }
+
 /**
  * Returns an array of steam ids for a particular team.
  *
