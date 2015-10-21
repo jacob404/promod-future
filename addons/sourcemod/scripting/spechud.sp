@@ -7,6 +7,7 @@
 #include <readyup>
 #include <pause>
 #include <colors>
+#undef REQUIRE_PLUGIN
 #include <l4d2_scoremod>
 #include <scoremod2>
 
@@ -65,7 +66,7 @@ public Plugin:myinfo =
 	name = "Hyper-V HUD Manager [Public Version]",
 	author = "Visor, darkid",
 	description = "Provides different HUDs for spectators",
-	version = "2.10",
+	version = "2.11",
 	url = "https://github.com/Attano/smplugins"
 };
 
@@ -78,6 +79,7 @@ public OnPluginStart()
 	RegConsoleCmd("sm_tankhud", ToggleTankHudCmd);
 
 	CreateTimer(SPECHUD_DRAW_INTERVAL, HudDrawTimer, _, TIMER_REPEAT);
+	OnAllPluginsLoaded();
 }
 
 public OnAllPluginsLoaded()
@@ -88,22 +90,27 @@ public OnAllPluginsLoaded()
 	if (LibraryExists("scoremod2")) {
 		scoremode |= ScoreMod2;
 	}
+	PrintToChatAll("Current scoremode: %d", scoremode);
 }
 public OnLibraryRemoved(const String:name[])
 {
+	PrintToChatAll("Library removed: %s", name);
 	if (strcmp(name, "l4d2_scoremod") == 0) {
-		scoremode |= ~L4D2_ScoreMod;
+		scoremode &= ~L4D2_ScoreMod;
 	} else if (strcmp(name, "scoremod2") == 0) {
-		scoremode |= ~ScoreMod2;
+		scoremode &= ~ScoreMod2;
 	}
+	PrintToChatAll("Current scoremode: %d", scoremode);
 }
 public OnLibraryAdded(const String:name[])
 {
+	PrintToChatAll("Library added: %s", name);
 	if (strcmp(name, "l4d2_scoremod") == 0) {
 		scoremode |= L4D2_ScoreMod;
 	} else if (strcmp(name, "scoremod2") == 0) {
 		scoremode |= ScoreMod2;
 	}
+	PrintToChatAll("Current scoremode: %d", scoremode);
 }
 
 public OnClientAuthorized(client, const String:auth[])
@@ -206,13 +213,13 @@ GetMeleePrefix(client, String:prefix[], length)
 	new secondary = GetPlayerWeaponSlot(client, _:L4D2WeaponSlot_Secondary);
 	new WeaponId:secondaryWep = IdentifyWeapon(secondary);
 
-	decl String:buf[4];
+	decl String:buf[64];
 	switch (secondaryWep)
 	{
-		case WEPID_NONE: buf = "N";
-		case WEPID_PISTOL: buf = (GetEntProp(secondary, Prop_Send, "m_isDualWielding") ? "DP" : "P");
-		case WEPID_MELEE: buf = "M";
-		case WEPID_PISTOL_MAGNUM: buf = "DE";
+		case WEPID_NONE: buf = "None";
+		case WEPID_PISTOL: buf = (GetEntProp(secondary, Prop_Send, "m_isDualWielding") ? "Dual Pistols" : "Pistol");
+		case WEPID_MELEE: buf = "Melee";
+		case WEPID_PISTOL_MAGNUM: buf = "Deagle";
 		default: buf = "?";
 	}
 
@@ -316,19 +323,17 @@ FillInfectedInfo(Handle:hSpecHud)
 			if (zClass == ZC_Tank)
 				continue;
 
-			if (IsInfectedGhost(client))
-			{
-				// TO-DO: Handle a case of respawning chipped SI, show the ghost's health
-				Format(info, sizeof(info), "%s: %s (Ghost)", name, ZOMBIECLASS_NAME(zClass));
+			Format(info, sizeof(info), "%s: %s (%iHP)", name, ZOMBIECLASS_NAME(zClass), GetClientHealth(client));
+
+			decl String:extra[16];
+			if (IsInfectedGhost(client)) {
+				extra = " [Ghost]";
+			} else if (GetEntityFlags(client) & FL_ONFIRE) {
+				extra = " [On Fire]";
+			} else {
+				extra = "";
 			}
-			else if (GetEntityFlags(client) & FL_ONFIRE)
-			{
-				Format(info, sizeof(info), "%s: %s (%iHP) [On Fire]", name, ZOMBIECLASS_NAME(zClass), GetClientHealth(client));
-			}
-			else
-			{
-				Format(info, sizeof(info), "%s: %s (%iHP)", name, ZOMBIECLASS_NAME(zClass), GetClientHealth(client));
-			}
+			Format(info, sizeof(info), "%s%s", info, extra);
 		}
 
 		infectedCount++;

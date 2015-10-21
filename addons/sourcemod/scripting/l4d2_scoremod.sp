@@ -61,6 +61,12 @@ new Handle:SM_hTempMulti2;
 // Score Difference
 new iDifference;
 
+public APLRes:AskPluginLoad2(Handle:plugin, bool:late, String:error[], errMax)
+{
+	CreateNative("HealthBonus", Native_GetBonus);
+	RegPluginLibrary("l4d2_scoremod");
+	return APLRes_Success;
+}
 
 public OnPluginStart()
 {
@@ -112,8 +118,6 @@ public OnPluginStart()
 	SM_iAdrenPercent = GetConVarInt(SM_hAdrenPercent);
 
 	RegConsoleCmd("sm_health", SM_Cmd_Health);
-
-	CreateNative("HealthBonus", Native_GetBonus);
 }
 
 public OnAllPluginsLoaded()

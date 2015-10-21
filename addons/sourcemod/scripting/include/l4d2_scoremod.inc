@@ -23,8 +23,26 @@
 #endif
 #define _l4d2_scoremod_included_
 
+public SharedPlugin:__pl_l4d2_scoremod =
+{
+	name = "l4d2_scoremod",
+	file = "l4d2_scoremod.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+}
+
 /**
  * Get the current health bonus.
  * @return Float health bonus
  */
 native HealthBonus();
+
+#if !defined REQUIRE_PLUGIN
+public __pl_l4d2_scoremod_SetNTVOptional()
+{
+	MarkNativeAsOptional("HealthBonus");
+}
+#endif

@@ -53,6 +53,8 @@ public Plugin:myinfo =
 public APLRes:AskPluginLoad2(Handle:plugin, bool:late, String:error[], errMax)
 {
 	bLateLoad = late;
+	CreateNative("DamageBonus", Native_GetBonus);
+	RegPluginLibrary("scoremod2");
 	return APLRes_Success;
 }
 
@@ -85,8 +87,6 @@ public OnPluginStart()
 			OnClientPutInServer(i);
 		}
 	}
-
-	CreateNative("DamageBonus", Native_GetBonus);
 }
 
 public OnPluginEnd()

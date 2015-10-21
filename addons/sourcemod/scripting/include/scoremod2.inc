@@ -23,8 +23,26 @@
 #endif
 #define _scoremod2_included_
 
+public SharedPlugin:__pl_scoremod2 =
+{
+	name = "scoremod2",
+	file = "scoremod2.smx",
+#if defined REQUIRE_PLUGIN
+	required = 1,
+#else
+	required = 0,
+#endif
+}
+
 /**
  * Get the current health bonus.
  * @return Float health bonus
  */
 native DamageBonus();
+
+#if !defined REQUIRE_PLUGIN
+public __pl_scoremod2_SetNTVOptional()
+{
+	MarkNativeAsOptional("DamageBonus");
+}
+#endif
