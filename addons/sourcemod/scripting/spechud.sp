@@ -90,27 +90,22 @@ public OnAllPluginsLoaded()
 	if (LibraryExists("scoremod2")) {
 		scoremode |= ScoreMod2;
 	}
-	PrintToChatAll("Current scoremode: %d", scoremode);
 }
 public OnLibraryRemoved(const String:name[])
 {
-	PrintToChatAll("Library removed: %s", name);
 	if (strcmp(name, "l4d2_scoremod") == 0) {
 		scoremode &= ~L4D2_ScoreMod;
 	} else if (strcmp(name, "scoremod2") == 0) {
 		scoremode &= ~ScoreMod2;
 	}
-	PrintToChatAll("Current scoremode: %d", scoremode);
 }
 public OnLibraryAdded(const String:name[])
 {
-	PrintToChatAll("Library added: %s", name);
 	if (strcmp(name, "l4d2_scoremod") == 0) {
 		scoremode |= L4D2_ScoreMod;
 	} else if (strcmp(name, "scoremod2") == 0) {
 		scoremode |= ScoreMod2;
 	}
-	PrintToChatAll("Current scoremode: %d", scoremode);
 }
 
 public OnClientAuthorized(client, const String:auth[])
