@@ -20,6 +20,7 @@
 -- Added health for ghost infected
 - Who will become tank is now printed to casters on round start.
 - Spawns out of saferoom can now be checked manually by all players by typing !spawns (sm_spawns). They will still be automatically printed to the survivors on round start.
+- Fixed a bug where spectators could !unready and cancel countdown.
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.

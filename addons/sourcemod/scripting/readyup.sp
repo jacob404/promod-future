@@ -391,6 +391,7 @@ public Action:Secret_Cmd(client, args)
 
 public Action:Ready_Cmd(client, args)
 {
+	if (GetClientTeam(client) == 1) return Plugin_Handled;
 	if (inReadyUp)
 	{
 		isPlayerReady[client] = true;
@@ -403,6 +404,7 @@ public Action:Ready_Cmd(client, args)
 
 public Action:Unready_Cmd(client, args)
 {
+	if (GetClientTeam(client) == 1) return Plugin_Handled;
 	if (inReadyUp)
 	{
 		isPlayerReady[client] = false;
@@ -414,6 +416,7 @@ public Action:Unready_Cmd(client, args)
 
 public Action:ToggleReady_Cmd(client, args)
 {
+	if (GetClientTeam(client) == 1) return Plugin_Handled;
 	if (inReadyUp)
 	{
 		isPlayerReady[client] = !isPlayerReady[client];
