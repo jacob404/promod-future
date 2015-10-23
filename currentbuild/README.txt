@@ -22,6 +22,8 @@
 - Spawns out of saferoom can now be checked manually by all players by typing !spawns (sm_spawns). They will still be automatically printed to the survivors on round start.
 - Fixed a bug where spectators could !unready and cancel countdown.
 - Added red flash when a tank gets melee'd (from EQ)
+- You can change from boomer to spitter (and back) while tank is up by right-clicking.
+- Fixed a bug where spitter limit didn't get reset if tank disconnected, was sm_kicked, or level was changed via changelevel or sm_map.
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
