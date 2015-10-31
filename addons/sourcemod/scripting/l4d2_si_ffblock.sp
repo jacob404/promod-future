@@ -4,9 +4,9 @@
 public Plugin:myinfo =
 {
     name = "L4D2 Infected Friendly Fire Disable",
-    author = "ProdigySim, Don, Visor",
+    author = "ProdigySim, Don, Visor, darkid",
     description = "Disables friendly fire between infected players.",
-    version = "1.3"
+    version = "1.4"
 }
 
 new Handle:cvar_ffblock;
@@ -70,7 +70,8 @@ public Action:OnWitchTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
     if (!GetConVarBool(cvar_block_witch_ff)) return Plugin_Continue;
     if (!IsClientAndInGame(attacker)) return Plugin_Continue;
     if (GetClientTeam(attacker) != 3) return Plugin_Continue;
-    return Plugin_Handled;
+    damage = 0.0;
+    return Plugin_Changed;
 }
 
 bool:IsClientAndInGame(index)
