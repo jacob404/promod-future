@@ -26,6 +26,7 @@
 - Fixed a bug where spitter limit didn't get reset if tank disconnected, was sm_kicked, or level was changed via changelevel or sm_map.
 - Pistol fire rate is now capped: 0.1 seconds for dual pistols, 0.2 seconds for single, and 0.3 while incapped.
 - Dual pistols can be autofired by holding mouse1 at 0.3 seconds per shot.
+- Special infected no longer deal damage to witches. Scratch away!
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
