@@ -3,6 +3,7 @@
 - Fixed tanks dealing self-damage with hittables.
 - Added AutoPause: Game automatically pauses when a player crashes. If an infected player crashes, their spawn timer is restored upon rejoining.
 - Fixed various double-getups.
+- Fixed a bug where punching a player who was jockeyed would not give them a getup.
 - When a player is rocked and then punched, they will undergo a punch getup animation after the rock animation ends.
 - Witches now deal continuous damage like Hunters and Jockeys. This makes the damage more accurate to her animations.
 - Tanks no longer go AI after third pass, instead they are set on fire. Current burn time is 30 seconds.
@@ -15,7 +16,7 @@
 - Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
 - Survivors will now take a maximum of 30 fall damage if they are pounced or jockeyed while on the no mercy 3 sewer ladder.
 - Updates to spechud:
--- Bonus (Health or Damage) is now visible
+-- Health Bonus / Damage Bonus is now visible
 -- Changed 'P', 'DP', 'M', and 'DE' to 'Pistol', 'Dual Pistols', 'Melee', and 'Deagle' respectively
 -- Added health for ghost infected
 - Who will become tank is now printed to casters on round start.
