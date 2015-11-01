@@ -2,6 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <l4d2_direct> // Used to get temp/perm health when ledge hung.
 #include <left4downtown>
 #undef REQUIRE_PLUGIN
 #include <l4d2lib>
@@ -34,6 +35,8 @@ new Float:SM_fTempMulti[3];
 
 new bool:SM_bModuleIsEnabled;
 new bool:SM_bHooked = false;
+
+new Handle:incappedPlayersTrie;
 
 // Saves first round score
 new bool:SM_bIsFirstRoundOver = false;
@@ -116,6 +119,8 @@ public OnPluginStart()
 	SM_fHealPercent = GetConVarFloat(SM_hHealPercent);
 	SM_iPillPercent = GetConVarInt(SM_hPillPercent);
 	SM_iAdrenPercent = GetConVarInt(SM_hAdrenPercent);
+
+	incappedPlayersTrie = CreateTrie();
 
 	RegConsoleCmd("sm_health", SM_Cmd_Health);
 }
@@ -207,6 +212,7 @@ PluginEnable()
 	HookEvent("round_end", SM_RoundEnd_Event);
 	HookEvent("round_start", SM_RoundStart_Event);
 	HookEvent("finale_vehicle_leaving", SM_FinaleVehicleLeaving_Event, EventHookMode_PostNoCopy);
+	HookEvent("player_ledge_grab", SM_PlayerLedgeGrab_Event, EventHookMode_Pre);
 	RegConsoleCmd("say", SM_Command_Say);
 	RegConsoleCmd("say_team", SM_Command_Say);
 	SM_fHBRatio = GetConVarFloat(SM_hHBRatio);
@@ -250,11 +256,11 @@ public Action:SM_PlayerDeath_Event(Handle:event, const String:name[], bool:dontB
 	{
 		SetConVarInt(SM_hSurvivalBonus, SM_CalculateSurvivalBonus());
 	}
-
 }
 
 public Action:SM_RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	ClearTrie(incappedPlayersTrie);
 	if (!SM_bModuleIsEnabled) return;
 	if(!SM_bIsFirstRoundOver)
 	{
@@ -302,7 +308,23 @@ public Action:SM_FinaleVehicleLeaving_Event(Handle:event, const String:name[], b
 	SetConVarInt(SM_hSurvivalBonus, SM_CalculateSurvivalBonus());
 }
 
+public Action:SM_PlayerLedgeGrab_Event(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (client <= 0 || client > MaxClients) return;
+	if (!IsSurvivor(client)) return;
+	new Handle:playerData = CreateTrie();
+	decl String:clientModel[42];
+
+	GetClientModel(client, clientModel, sizeof(clientModel));
+	SetTrieValue(playerData, "temp", L4D2Direct_GetPreIncapHealthBuffer(client));
+	SetTrieValue(playerData, "perm", L4D2Direct_GetPreIncapHealth(client));
+	SetTrieValue(incappedPlayersTrie, clientModel, playerData);
+}
+
 SM_IsPlayerIncap(client) return GetEntProp(client, Prop_Send, "m_isIncapacitated");
+
+SM_IsPlayerHanging(client) return GetEntProp(client, Prop_Send, "m_isHangingFromLedge");
 
 public Action:SM_Cmd_Health(client, args)
 {
@@ -317,33 +339,33 @@ public Action:SM_Cmd_Health(client, args)
     {
 		iDifference = SM_iFirstScore - iScore;
 		if (iScore > SM_iFirstScore) iDifference = (~iDifference) + 1;
-		PrintToChat(client, "\x01[ScoreMod] Round 1 Bonus: \x05%d\x01 (Difference: \x05%d\x01)", SM_iFirstScore, iDifference);
+		PrintToChat(client, "\x01[SM] Round 1 Bonus: \x05%d\x01 (Difference: \x05%d\x01)", SM_iFirstScore, iDifference);
 	}
-	if (client)	PrintToChat(client, "\x01[ScoreMod] Average Health: \x05%.02f\x01", fAvgHealth);
-	else PrintToServer("[ScoreMod] Average Health: %.02f", fAvgHealth);
+	if (client)	PrintToChat(client, "\x01[SM] Average Health: \x05%.02f\x01", fAvgHealth);
+	else PrintToServer("[SM] Average Health: %.02f", fAvgHealth);
 
 
 	#if DEBUG_SM
-		LogMessage("[ScoreMod] CalcScore: %d MapMulti: %.02f Multiplier %.02f", iScore, SM_fMapMulti, SM_fHBRatio);
+		LogMessage("[SM] CalcScore: %d MapMulti: %.02f Multiplier %.02f", iScore, SM_fMapMulti, SM_fHBRatio);
 	#endif
 
 	if (client)
 	{
-		PrintToChat(client, "\x01[ScoreMod] Health Bonus: \x05%d\x01", iScore );
-		if (SM_fSurvivalBonusRatio != 0.0) PrintToChat(client, "\x01[ScoreMod] Static Survival Bonus Per Survivor: \x05%d\x01", RoundToFloor(400 * SM_fMapMulti * SM_fSurvivalBonusRatio));
+		PrintToChat(client, "\x01[SM] Health Bonus: \x05%d\x01", iScore );
+		if (SM_fSurvivalBonusRatio != 0.0) PrintToChat(client, "\x01[SM] Static Survival Bonus Per Survivor: \x05%d\x01", RoundToFloor(400 * SM_fMapMulti * SM_fSurvivalBonusRatio));
 	}
 	else
 	{
-		PrintToServer("[ScoreMod] Health Bonus: %d", iScore );
-		if (SM_fSurvivalBonusRatio != 0.0) PrintToServer("[ScoreMod] Static Survival Bonus Per Survivor: %d", RoundToFloor(400 * SM_fMapMulti * SM_fSurvivalBonusRatio));
+		PrintToServer("[SM] Health Bonus: %d", iScore );
+		if (SM_fSurvivalBonusRatio != 0.0) PrintToServer("[SM] Static Survival Bonus Per Survivor: %d", RoundToFloor(400 * SM_fMapMulti * SM_fSurvivalBonusRatio));
 	}
 
 	if (GetConVarBool(SM_hCustomMaxDistance) && GetCustomMapMaxScore() > -1) {
 		if (client) {
-			PrintToChat(client, "\x01[ScoreMod] Custom Max Distance: \x05%d\x01", GetCustomMapMaxScore());
+			PrintToChat(client, "\x01[SM] Custom Max Distance: \x05%d\x01", GetCustomMapMaxScore());
 		}
 		else {
-			PrintToServer("[ScoreMod] Custom Max Distance: %d", GetCustomMapMaxScore());
+			PrintToServer("[SM] Custom Max Distance: %d", GetCustomMapMaxScore());
 		}
 	}
 }
@@ -366,7 +388,6 @@ stock Float:SM_CalculateAvgHealth(&iAliveCount=0)
 	new iTotalTempHealth[3];
 
 	new Float:fTotalAdjustedTempHealth;
-	new bool:IsFinale = L4D_IsMissionFinalMap();
 	// Temporary Storage Variables for inventory
 	new iTemp;
 	new iCurrHealth;
@@ -384,44 +405,65 @@ stock Float:SM_CalculateAvgHealth(&iAliveCount=0)
 			iSurvCount++;
 			if (IsPlayerAlive(index))
 			{
+				iAliveCount++;
 
-				if (!SM_IsPlayerIncap(index))
-				{
-					// Get Main health stats
-					iCurrHealth = GetSurvivorPermanentHealth(index);
+				if (SM_IsPlayerHanging(index)) {
+					// If a ledge-capped player takes 150 damage (of their 300 temp health), they will lose 50% of their health upon standing, taken from temp first.
+					decl String:clientModel[42];
+					GetClientModel(index, clientModel, sizeof(clientModel));
+					decl Handle:playerData;
+					GetTrieValue(incappedPlayersTrie, clientModel, playerData);
+					decl iTempOnIncap, iPermOnIncap;
+					GetTrieValue(playerData, "temp", iTempOnIncap);
+					GetTrieValue(playerData, "perm", iPermOnIncap);
 
-					iCurrTemp = GetSurvivorTempHealth(index);
-
+					new incapHealth = GetConVarInt(FindConVar("survivor_incap_health"));
+					new Float:healthLossPercent = (1.0*incapHealth - GetSurvivorPermanentHealth(index))/incapHealth;
+					new healthLost = RoundToFloor((iPermOnIncap + iTempOnIncap) * healthLossPercent);
+					if (healthLost <= iTempOnIncap) {
+						iCurrTemp = iTempOnIncap - healthLost;
+						iCurrHealth = iPermOnIncap;
+					} else {
+						iCurrTemp = 0;
+						iCurrHealth = iPermOnIncap + iTempOnIncap - healthLost;
+					}
 					iIncapCount = GetSurvivorIncapCount(index);
-
-					// Adjust for kits
-					iTemp = GetPlayerWeaponSlot(index, 3);
-					if (iTemp > -1)
-					{
-						GetEdictClassname(iTemp, strTemp, sizeof(strTemp));
-						if (StrEqual(strTemp, "weapon_first_aid_kit"))
-						{
-							iCurrHealth = RoundToFloor(iCurrHealth + ((100 - iCurrHealth) * SM_fHealPercent));
-							iCurrTemp = 0;
-							iIncapCount = 0;
-						}
-					}
-					// Adjust for pills/adrenaline
-					iTemp = GetPlayerWeaponSlot(index, 4);
-					if (iTemp > -1)
-					{
-						GetEdictClassname(iTemp, strTemp, sizeof(strTemp));
-						if (StrEqual(strTemp, "weapon_pain_pills")) iCurrTemp += SM_iPillPercent;
-						else if (StrEqual(strTemp, "weapon_adrenaline")) iCurrTemp += SM_iAdrenPercent;
-					}
-					// Enforce max 100 total health points
-					if ((iCurrTemp + iCurrHealth) > 100) iCurrTemp = 100 - iCurrHealth;
-					iAliveCount++;
-
-					iTotalHealth += iCurrHealth;
-					iTotalTempHealth[iIncapCount] += iCurrTemp;
+				} else if (SM_IsPlayerIncap(index)) {
+					// Incapped players count for 30 temp health.
+					iCurrHealth = 0;
+					iCurrTemp = GetConVarInt(FindConVar("survivor_revive_health"));
+					iIncapCount = GetSurvivorIncapCount(index) + 1; // The method doesn't include *this* incap.
+				} else {
+					// Player is standing.
+					iCurrHealth = GetSurvivorPermanentHealth(index);
+					iCurrTemp = GetSurvivorTempHealth(index);
+					iIncapCount = GetSurvivorIncapCount(index);
 				}
-				else if (!IsFinale) iAliveCount++;
+
+				// If the player has a health kit, award them perm health equal to how much it heals, and reset their incap count.
+				iTemp = GetPlayerWeaponSlot(index, 3);
+				if (iTemp > -1)
+				{
+					GetEdictClassname(iTemp, strTemp, sizeof(strTemp));
+					if (StrEqual(strTemp, "weapon_first_aid_kit"))
+					{
+						iCurrHealth = RoundToFloor(iCurrHealth + ((100 - iCurrHealth) * SM_fHealPercent));
+						iIncapCount = 0;
+					}
+				}
+				// If the player has pills or adrenaline, grant them temp bonus equal to how much that item heals.
+				iTemp = GetPlayerWeaponSlot(index, 4);
+				if (iTemp > -1)
+				{
+					GetEdictClassname(iTemp, strTemp, sizeof(strTemp));
+					if (StrEqual(strTemp, "weapon_pain_pills")) iTotalTempHealth[0] += SM_iPillPercent;
+					else if (StrEqual(strTemp, "weapon_adrenaline")) iTotalTempHealth[0] += SM_iAdrenPercent;
+				}
+				// Enforce max 100 total health points
+				if ((iCurrTemp + iCurrHealth) > 100) iCurrTemp = 100 - iCurrHealth;
+
+				iTotalHealth += iCurrHealth;
+				iTotalTempHealth[iIncapCount] += iCurrTemp;
 			}
 		}
 	}
@@ -437,7 +479,7 @@ stock Float:SM_CalculateAvgHealth(&iAliveCount=0)
 	new Float:fAvgHealth  = (iTotalHealth + fTotalAdjustedTempHealth) / iSurvCount;
 
 	#if DEBUG_SM
-		LogMessage("[ScoreMod] TotalPerm: %d TotalAdjustedTemp: %.02f SurvCount: %d AliveCount: %d AvgHealth: %.02f",
+		LogMessage("[SM] TotalPerm: %d TotalAdjustedTemp: %.02f SurvCount: %d AliveCount: %d AvgHealth: %.02f",
 			iTotalHealth, fTotalAdjustedTempHealth, iSurvCount, iAliveCount, fAvgHealth);
 	#endif
 
