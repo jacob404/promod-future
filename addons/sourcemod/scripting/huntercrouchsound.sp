@@ -79,13 +79,14 @@ public Action:HunterCrouchTracking(Handle:timer, any:client)
 
 public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) 
 {
-    new victim = GetEventInt(event, "userid");
-    new client = GetClientOfUserId(victim);
+	new victim = GetEventInt(event, "userid");
+	new client = GetClientOfUserId(victim);
 	isHunter[client] = false;
 }
 
 public Action:Event_BotPlayerReplace(Handle:event, const String:name[], bool:dontBroadcast) 
 {
-    new player = GetEventInt(event, "player");
+    	new player = GetEventInt(event, "player");
 	new client = GetClientOfUserId(player);
 	isHunter[client] = false;
+}
