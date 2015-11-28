@@ -49,8 +49,6 @@ public Action:PlayerHit(Handle:event, String:event_name[], bool:dontBroadcast)
 			SDKHook(PlayerID, SDKHook_PostThink, OnThink);
 		}
 		return;
-		
-		
     }
 }
 
@@ -82,68 +80,31 @@ public OnThink(client)
 	lastAnimSequence[client] = sequence;
 }
 
-stock GetWeaponAmmo(client, slot)
-{
-    new ammoOffset = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
-    return GetEntData(client, ammoOffset+(slot*4));
-}
-stock SetWeaponAmmo(client, slot, ammo)
-{
-	new ammoOffset = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
-	return SetEntData(client, ammoOffset+(slot*4), ammo);
-}
-
 public Action: SwapToGun(any:client)
 {
-	//What Gun did they have?
-	decl String:weaponname[64];
-	new weaponindex = GetPlayerWeaponSlot(client, 0);
-	GetEdictClassname(weaponindex, weaponname, sizeof(weaponname));
-	
-	//How much ammo in their clip?
-	new ammoclip = GetEntProp(weaponindex, Prop_Send, "m_iClip1");
-	
-	//How much ammo reserve did they have?
-	new ammotype = GetEntProp(weaponindex, Prop_Send, "m_iPrimaryAmmoType");
-	new reserveammo = GetWeaponAmmo(client, ammotype);
-	
-	//Delete their Gun	
-	AcceptEntityInput(weaponindex, "kill");
-	
-	new Handle:hData;
-	CreateDataTimer(0.1, TimedSwap, hData);
-	WritePackCell(hData, client);
-	WritePackString(hData, weaponname);
-	WritePackCell(hData, ammoclip);
-	WritePackCell(hData, ammotype);
-	WritePackCell(hData, reserveammo);
-	
-	return
-}
+	//New method for swapping guns, should fix the dropping a copy of the gun issue
+	new String:primaryWeaponName[256];
+	new primaryWeapon = GetPlayerWeaponSlot(client, 0);
+	GetEdictClassname(primaryWeapon, primaryWeaponName, sizeof(primaryWeaponName));
 
-public Action:TimedSwap(Handle:Timer, Handle:hData)
-{
-    new client, ammoclip, ammotype, reserveammo, weaponindex;
-    decl String:weaponname[64];
-    
-    ResetPack(hData);
-    client = ReadPackCell(hData);
-    ReadPackString(hData, weaponname, sizeof(weaponname));
-    ammoclip = ReadPackCell(hData);
-    ammotype = ReadPackCell(hData);
-    reserveammo = ReadPackCell(hData);
-	
-    //Give them a new Gun of the same type
-    new flagsgive = GetCommandFlags("give");
-    SetCommandFlags("give", flagsgive & ~FCVAR_CHEAT);
-    FakeClientCommand(client, "give %s", weaponname);
-    SetCommandFlags("give", flagsgive|FCVAR_CHEAT);
-    
-    //Set the ammo to the correct number
-    weaponindex = GetPlayerWeaponSlot(client, 0);		
-    SetEntProp(weaponindex, Prop_Send, "m_iClip1", ammoclip);
-    SetWeaponAmmo(client, ammotype, reserveammo);
-    return
+	new primaryAmmoClip = GetEntProp(primaryWeapon, Prop_Data, "m_iClip1");
+	new primaryAmmoType = GetEntProp(primaryWeapon, Prop_Data, "m_iPrimaryAmmoType");
+	new primaryAmmoReserve = GetReserveAmmoOfType(client, primaryAmmoType);
+
+	new newPrimaryWeapon = CreateEntityByName(primaryWeaponName);
+	if (IsValidEntity(newPrimaryWeapon))
+	{
+		AcceptEntityInput(primaryWeapon, "kill");
+		
+		DispatchSpawn(newPrimaryWeapon);
+
+		EquipPlayerWeapon(client, newPrimaryWeapon);
+		
+		SetEntProp(newPrimaryWeapon, Prop_Send, "m_iClip1", primaryAmmoClip);
+		SetReserveAmmoOfType(client, primaryAmmoType, primaryAmmoReserve);
+	}
+
+	return
 }
  
 public Action:L4D_OnShovedBySurvivor(shover, shovee, const Float:vector[3])
@@ -168,6 +129,18 @@ stock bool:IsSurvivor(client)
 stock bool:IsInfected(client)
 {
     return client > 0 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) == 3;
+}
+
+stock SetReserveAmmoOfType(client, type, ammo)
+{
+	new ammoOffset = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
+	return SetEntData(client, ammoOffset+(type*4), ammo);
+}
+
+stock GetReserveAmmoOfType(client, type)
+{
+    new ammoOffset = FindSendPropInfo("CTerrorPlayer", "m_iAmmo");
+    return GetEntData(client, ammoOffset+(type*4));
 }
  
 bool:IsTankOrCharger(client)  
