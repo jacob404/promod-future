@@ -1,7 +1,7 @@
 /*
-	SourcePawn is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
-	SourceMod is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
-	Pawn and SMALL are Copyright (C) 1997-2008 ITB CompuPhase.
+	SourcePawn is Copyright (C) 2006-2015 AlliedModders LLC.  All rights reserved.
+	SourceMod is Copyright (C) 2006-2015 AlliedModders LLC.  All rights reserved.
+	Pawn and SMALL are Copyright (C) 1997-2015 ITB CompuPhase.
 	Source is Copyright (C) Valve Corporation.
 	All trademarks are property of their respective owners.
 
@@ -26,7 +26,7 @@ public Plugin:myinfo =
 	description = "Prevents calling votes while others are loading",
 	author = "ProdigySim, CanadaRox, darkid",
 	version = "2.0.1.0",
-	url = "http://www.sourcemod.net/"
+	url = "https://github.com/jacob404/Pro-Mod-4.0/releases/latest"
 };
 new bool:g_bBlockCallvote;
 new loadedPlayers = 0;

@@ -4,7 +4,7 @@
 
  1.1
  - Fixed possible non-changer infected detecting as heatseeking charger
- 
+
  1.0
  - Initial release
 ^^^^^^^^^^^^^^^^^^^^CHANGELOG^^^^^^^^^^^^^^^^^^^^ */
