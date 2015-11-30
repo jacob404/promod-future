@@ -47,8 +47,6 @@ public OnPluginStart()
 {
 	sv_cheats = FindConVar("sv_cheats");
 	HookEvent("player_team", OnTeamChange);
-	ServerCommand("smac_removecvar sv_cheats");
-	ServerCommand("smac_removecvar fog_enable");
 }
 
 public Action:L4D2_OnClientDisableAddons(const String:SteamID[])
@@ -68,6 +66,14 @@ public OnTeamChange(Handle:event, String:name[], bool:dontBroadcast)
 		}
 		SendConVarValue(client, sv_cheats, "1");
 	} else {
+		SendConVarValue(client, sv_cheats, "0");
+	}
+}
+
+public OnPluginEnd() {
+	for (new client=1; client<=MaxClients; client++) {
+		if (!IsClientInGame(client)) continue;
+		if (IsFakeClient(client)) return;
 		SendConVarValue(client, sv_cheats, "0");
 	}
 }
