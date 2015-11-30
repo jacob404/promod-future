@@ -1,7 +1,7 @@
 /*
-	SourcePawn is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
-	SourceMod is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
-	Pawn and SMALL are Copyright (C) 1997-2008 ITB CompuPhase.
+	SourcePawn is Copyright (C) 2006-2015 AlliedModders LLC.  All rights reserved.
+	SourceMod is Copyright (C) 2006-2015 AlliedModders LLC.  All rights reserved.
+	Pawn and SMALL are Copyright (C) 1997-2015 ITB CompuPhase.
 	Source is Copyright (C) Valve Corporation.
 	All trademarks are property of their respective owners.
 
@@ -21,208 +21,180 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <sdktools>
+#include <sdktools> // For sound hooks
+// #include <crc32> // To convert sound strings into closed caption hashes
 
-#define MAX_ROCHELLESOUND      8
-#define MAX_ELLISSOUND         6
-#define MAX_NICKSOUND          14
-#define MAX_COACHSOUND         18
-
-new Handle:cBlockHB;
-new Handle:cSurvivorMelee;
- 
-public Plugin:myinfo = 
+public Plugin:myinfo =
 {
 	name = "Sound Manipulation",
-	author = "Sir",
-	description = "Allows control over certain sounds",
-	version = "1.0",
-	url = "https://github.com/SirPlease/SirCoding"
+	// Everyone who was in one of these plugins: hunter_callout_blocker, l4d_inaudible_ghosts, l4d2_sound_manipulation, l4d2_unsilent_jockey
+	author = "Sir, AtomicStryker, DieTeeTasse, ProdigySim, High Cookie, darkid",
+	description = "Blocks certain sounds, replaces others, creates more.",
+	version = "2.0",
+	url = "https://github.com/jacob404/Pro-Mod-4.0/releases/latest"
 }
 
-new const String: sCoachSound[MAX_COACHSOUND+1][] =
+// It would appear to be impossible to fix the coach melee sound bug, since SoundHook doesn't ever trigger for it.
+
+new const String:jockeySounds[10][] =
 {
-	"player/survivor/voice/coach/meleeswing01.wav",
-	"player/survivor/voice/coach/meleeswing02.wav",
-	"player/survivor/voice/coach/meleeswing03.wav",
-	"player/survivor/voice/coach/meleeswing04.wav",
-	"player/survivor/voice/coach/meleeswing05.wav",
-	"player/survivor/voice/coach/meleeswing06.wav",
-	"player/survivor/voice/coach/meleeswing07.wav",
-	"player/survivor/voice/coach/meleeswing08.wav",
-	"player/survivor/voice/coach/meleeswing09.wav",
-	"player/survivor/voice/coach/meleeswing10.wav",
-	"player/survivor/voice/coach/meleeswing11.wav",
-	"player/survivor/voice/coach/meleeswing12.wav",
-	"player/survivor/voice/coach/meleeswing13.wav",
-	"player/survivor/voice/coach/meleeswing14.wav",
-	"player/survivor/voice/coach/meleeswing15.wav",
-	"player/survivor/voice/coach/meleeswing16.wav",
-	"player/survivor/voice/coach/meleeswing17.wav",
-	"player/survivor/voice/coach/meleeswing18.wav",
-	"player/survivor/voice/coach/meleeswing19.wav"
+	"player/jockey/voice/idle/jockey_spotprey_01.wav",
+	"player/jockey/voice/idle/jockey_spotprey_02.wav",
+	"player/jockey/voice/idle/jockey_lurk01.wav",
+	"player/jockey/voice/attack/jockey_lurk02.wav",
+	// "player/jockey/voice/idle/jockey_lurk03.wav", // Kinda quiet
+	"player/jockey/voice/idle/jockey_lurk04.wav",
+	"player/jockey/voice/idle/jockey_lurk05.wav",
+	"player/jockey/voice/idle/jockey_lurk06.wav",
+	"player/jockey/voice/idle/jockey_lurk07.wav",
+	"player/jockey/voice/idle/jockey_lurk09.wav",
+	"player/jockey/voice/idle/jockey_lurk11.wav"
 };
 
-new const String: sRochelleSound[MAX_ROCHELLESOUND+1][] =
-{
-	"player/survivor/voice/producer/meleeswing01.wav",
-	"player/survivor/voice/producer/meleeswing02.wav",
-	"player/survivor/voice/producer/meleeswing03.wav",
-	"player/survivor/voice/producer/meleeswing04.wav",
-	"player/survivor/voice/producer/meleeswing05.wav",
-	"player/survivor/voice/producer/meleeswing06.wav",
-	"player/survivor/voice/producer/meleeswing07.wav",
-	"player/survivor/voice/producer/meleeswing08.wav",
-	"player/survivor/voice/producer/meleeswing09.wav"
-};
-
-new const String: sEllisSound[MAX_ELLISSOUND+1][] =
-{
-	"player/survivor/voice/mechanic/meleeswing01.wav",
-	"player/survivor/voice/mechanic/meleeswing02.wav",
-	"player/survivor/voice/mechanic/meleeswing03.wav",
-	"player/survivor/voice/mechanic/meleeswing04.wav",
-	"player/survivor/voice/mechanic/meleeswing05.wav",
-	"player/survivor/voice/mechanic/meleeswing06.wav",
-	"player/survivor/voice/mechanic/meleeswing07.wav"
-};
-
-new const String: sNickSound[MAX_NICKSOUND+1][] =
-{
-	"player/survivor/voice/gambler/meleeswing01.wav",
-	"player/survivor/voice/gambler/meleeswing02.wav",
-	"player/survivor/voice/gambler/meleeswing03.wav",
-	"player/survivor/voice/gambler/meleeswing04.wav",
-	"player/survivor/voice/gambler/meleeswing05.wav",
-	"player/survivor/voice/gambler/meleeswing06.wav",
-	"player/survivor/voice/gambler/meleeswing07.wav",
-	"player/survivor/voice/gambler/meleeswing08.wav",
-	"player/survivor/voice/gambler/meleeswing09.wav",
-	"player/survivor/voice/gambler/meleeswing10.wav",
-	"player/survivor/voice/gambler/meleeswing11.wav",
-	"player/survivor/voice/gambler/meleeswing12.wav",
-	"player/survivor/voice/gambler/meleeswing13.wav",
-	"player/survivor/voice/gambler/meleeswing14.wav",
-	"player/survivor/voice/gambler/meleeswing15.wav"
-};
-
+new Handle:blockHBSound;
+new isGhostOffset;
+new Handle:soundHashes;
+new Float:lastJockeySound;
+new Float:lastSurvivorVoiceCommand[2048];
 
 public OnPluginStart()
 {
-	cBlockHB = CreateConVar("sound_block_hb", "0", "Block the Heartbeat Sound, very useful for 1v1 matchmodes");
-	cSurvivorMelee = CreateConVar("sound_survivor_melee", "1", "Let the Survivors actually use their melee swing grunts");
-	
-	//Event
-	HookEvent("player_hurt", PlayerHurt);
-	
-	//Sound Hook
+	blockHBSound = CreateConVar("sound_block_heartbeat", "0", "Block the Heartbeat Sound, very useful for 1v1 matchmodes");
+
+	soundHashes = CreateArray();
+
+	isGhostOffset = FindSendPropInfo("CTerrorPlayer", "m_isGhost");
+
+	// Used to detect jockey spawns.
+	HookEvent("player_spawn", PlayerSpawn);
+
+	// Used to block sounds from being played
 	AddNormalSoundHook(NormalSHook:SoundHook);
+	// Used to block CCs from being played
+	HookUserMessage(GetUserMessageId("CloseCaption"), CloseCaptionHook, true);
 }
 
-public OnMapStart()
-{
-	for (new i = 0; i <= MAX_ROCHELLESOUND; i++)
-	{
-		PrefetchSound(sRochelleSound[i]);
-		PrecacheSound(sRochelleSound[i], true);
-	}
-	
-	for (new i = 0; i <= MAX_NICKSOUND; i++)
-	{
-		PrefetchSound(sNickSound[i]);
-		PrecacheSound(sNickSound[i], true);
-	}
-	
-	for (new i = 0; i <= MAX_ELLISSOUND; i++)
-	{
-		PrefetchSound(sEllisSound[i]);
-		PrecacheSound(sEllisSound[i], true);
-	}
-	
-	for (new i = 0; i <= MAX_COACHSOUND; i++)
-	{
-		PrefetchSound(sCoachSound[i]);
-		PrecacheSound(sCoachSound[i], true);
-	}
+public OnMapStart() {
+	PreloadSounds(jockeySounds, sizeof(jockeySounds));
 }
 
-public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity)
-{
-	if (StrEqual(sample, "player/heartbeatloop.wav", false) && GetConVarBool(cBlockHB))
-	{
+PreloadSounds(const String:sounds[][], size) {
+	for (new i=0; i<size; i++) {
+		PrefetchSound(sounds[i]);
+		PrecacheSound(sounds[i], true);
+		// I'll use this when I'm sure crc32 hashing works. Until then, we have a fixed array.
+		// new hash = Hash(sounds[i]);
+		// PushArrayCell(soundHashes, hash);
+	}
+	if (GetArraySize(soundHashes) > 0) return;
+	// Coach
+	PushArrayCell(soundHashes, -1789308882);
+	PushArrayCell(soundHashes, -497131336);
+	PushArrayCell(soundHashes, 2069311746);
+	// Rochelle
+	PushArrayCell(soundHashes, -1927922847);
+	PushArrayCell(soundHashes, 337603291);
+	PushArrayCell(soundHashes, 1662540365);
+	// Nick
+	PushArrayCell(soundHashes, -2055529376);
+	PushArrayCell(soundHashes, -183375633);
+	PushArrayCell(soundHashes, 455051715);
+	PushArrayCell(soundHashes, 1813559637);
+	// Ellis
+	PushArrayCell(soundHashes, -1362875844);
+	PushArrayCell(soundHashes, -641525078);
+	PushArrayCell(soundHashes, 815841183);
+	PushArrayCell(soundHashes, 1086999312);
+	// Francis
+	PushArrayCell(soundHashes, -2116245366);
+	PushArrayCell(soundHashes, -153380836);
+	PushArrayCell(soundHashes, 1876085158);
+	// Louis
+	PushArrayCell(soundHashes, -1990306432);
+	PushArrayCell(soundHashes, -27695850);
+	PushArrayCell(soundHashes, 1733309612);
+	// Zoey
+	PushArrayCell(soundHashes, -2008231496);
+	PushArrayCell(soundHashes, -11804370);
+	PushArrayCell(soundHashes, 1715646612);
+}
+
+public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (client <= 0 || client > MaxClients) return;
+	if (!IsClientInGame(client)) return;
+	if (GetGameTime() - lastJockeySound < 0.1) return;
+	lastJockeySound = GetGameTime();
+	EmitRandomSound(jockeySounds, sizeof(jockeySounds), client);
+}
+
+EmitRandomSound(const String:sounds[][], size, client) {
+	new rand = GetRandomInt(0, size);
+	EmitSoundToAll(sounds[rand], client, SNDCHAN_VOICE);
+}
+
+public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity) {
+	if (StrEqual(sample, "player/heartbeatloop.wav")) {
+		if (GetConVarBool(blockHBSound)) {
+			return Plugin_Handled;
+		}
+	} else if (StrEqual(sample, "player/jumplanding_zombie.wav")) {
+		if (GetEntData(entity, isGhostOffset)) {
+			for (new i=0; i<sizeof(clients); i++) {
+				if (!IsClientInGame(i)) continue;
+				if (IsFakeClient(i)) continue;
+				// Don't play this sound to survivors.
+				if (GetClientTeam(clients[i]) == 2) {
+					numClients--;
+					clients[i] = 0;
+				}
+			}
+			return Plugin_Changed;
+		}
+	} else if (StrContains(sample, "WarnHunter") != -1) {
+		// These are the hunter callouts. They can be called before the hunter starts crouching, which is bad.
+		return Plugin_Handled;
+	} else if (StrContains(sample, "jockey/voice") != -1) {
+		// Don't spam jockey sounds.
+		if (GetGameTime() - lastJockeySound < 0.1) {
+			return Plugin_Handled;
+		} else {
+			lastJockeySound = GetGameTime();
+		}
 		numClients = 0;
-		
+		for (new client=1; client<=MaxClients; client++) {
+			if (!IsClientInGame(client)) continue;
+			if (IsFakeClient(client)) continue;
+			// Play this sound to all real, non-bot clients.
+			clients[numClients++] = client;
+		}
 		return Plugin_Changed;
+	} else if (StrContains(sample, "survivor\\voice") != -1) {
+		if (!IsClientInGame(entity)) return Plugin_Continue;
+		if (GetGameTime() - lastSurvivorVoiceCommand[entity] < 1.0) {
+			return Plugin_Handled;
+		} else {
+			lastSurvivorVoiceCommand[entity] = GetGameTime();
+		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new String:weapon[64];
-	GetEventString(event, "weapon", weapon, sizeof(weapon));
-	
-	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-	new health = GetEventInt(event, "health");
-	
-	if (StrEqual(weapon, "melee") && IsSi(victim))
-	{
-		// SI Died
-		if (health <= 0 && GetConVarBool(cSurvivorMelee))
-		{
-			if (attacker <= 0 || attacker > MaxClients) return Plugin_Handled;
-			new String:clientModel[42];
-			GetClientModel(attacker, clientModel, sizeof(clientModel));
-			
-			//
-			//Make sure the Survivors have their Melee Sounds!
-			//
-			
-			//Coach
-			if (StrEqual(clientModel, "models/survivors/survivor_coach.mdl"))
-			{
-				new rndPick = GetRandomInt(0, MAX_COACHSOUND);
-				EmitSoundToAll(sCoachSound[rndPick], attacker, SNDCHAN_VOICE);
-			}
-			//Nick
-			else if (StrEqual(clientModel, "models/survivors/survivor_gambler.mdl"))
-			{	
-				new rndPick = GetRandomInt(0, MAX_NICKSOUND);
-				EmitSoundToAll(sNickSound[rndPick], attacker, SNDCHAN_VOICE);
-			}
-			//Rochelle
-			else if (StrEqual(clientModel, "models/survivors/survivor_producer.mdl"))
-			{
-				new rndPick = GetRandomInt(0, MAX_ROCHELLESOUND);
-				EmitSoundToAll(sRochelleSound[rndPick], attacker, SNDCHAN_VOICE);
-			}
-			//Ellis
-			else if (StrEqual(clientModel, "models/survivors/survivor_mechanic.mdl")) 
-			{	
-				new rndPick = GetRandomInt(0, MAX_ELLISSOUND);
-				EmitSoundToAll(sEllisSound[rndPick], attacker, SNDCHAN_VOICE);
-			}
-			//No Matching Survivors
-			else return Plugin_Continue;
-				
-			//L4D1 Survivor.. No Files yet
-			//else if (StrEqual(clientModel, "models/survivors/survivor_manager.mdl")) 
-			//else if (StrEqual(clientModel, "models/survivors/survivor_teenangst.mdl"))
-			//else if (StrEqual(clientModel, "models/survivors/survivor_namvet.mdl"))
-			//else if (StrEqual(clientModel, "models/survivors/survivor_biker.mdl"))
-		}    
-	}
+public Action:CloseCaptionHook(UserMsg:msg_id, Handle:msg, const players[], playersNum, bool:reliable, bool:init) {
+	new hash = BfReadNum(msg);
+	if (FindValueInArray(soundHashes, hash) != -1) return Plugin_Handled;
 	return Plugin_Continue;
-}	
+}
 
-bool:IsSi(client) 
-{
-	if (IsClientConnected(client)
-	&& IsClientInGame(client)
-	&& GetClientTeam(client) == 3) 
-	{
-		return true;
-	}
-	
-	return false;}
+// Hash(String:name[]) {
+	/* First, a number of things happen within SoundEmitterSystem.cpp [https://github.com/Sandern/aswscratch/blob/master/src/game/shared/SoundEmitterSystem.cpp]:
+	 * 0. EmitSoundByHandle() [#L536] gets called from somewhere.
+	 * 1. EmitClosedCaption() [#L756] gets called [#L659].
+	 * 2. GetCaptionHash() [#L1142] gets called [#L855] or [#L860].
+	 * 3. CaptionLookup_t.setHash() gets called [#L1148].
+	 * This function is part of captioncompiler.h [https://github.com/Sandern/aswscratch/blob/master/src/public/captioncompiler.h]
+	 * CRC32_t.ProcessBuffer() is called [#L51].
+	 * As far as I can tell, this is a part of the C++ mux library: [http://frontiermux.com/src/mux2/html/svdhash_8h.html#1f59ad0487ae09edc583bc2f97683cc7]. Regardless, CRC32 is a standard hash, and someone has already implemented it for me.
+	*/
+//	return crc32_arr(name);
+// }

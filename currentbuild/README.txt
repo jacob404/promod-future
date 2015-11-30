@@ -30,6 +30,7 @@
 - Special infected no longer deal damage to witches. Scratch away!
 - Health bonus now correctly handles incapped and ledge-hung survivors.
 - Health bonus can no longer be manipulated by passing pills.
+- Made another attempt to fix silent jockeys. If you have any recorded evidence (demo, cast) of this taking place, please tell us!
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
