@@ -1,18 +1,17 @@
 4.5
 - Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
-- Forced all crouching hunter to emit sound
-- Fixed gun drop bug
+- Forced all crouching hunters to emit sound, even if they are not holding crouch.
+- Fixed a bug which could cause survivors to drop their gun when being punched by a tank while their melee is equipped.
 - Fixed tanks dealing self-damage with hittables.
 - Added AutoPause: Game automatically pauses when a player crashes. If an infected player crashes, their spawn timer is restored upon rejoining.
 - Fixed various double-getups.
 - Fixed a bug where punching a player who was jockeyed would not give them a getup.
 - When a player is rocked and then punched, they will undergo a punch getup animation after the rock animation ends.
 - Witches now deal continuous damage like Hunters and Jockeys. This makes the damage more accurate to her animations.
-- Tanks no longer go AI after third pass, instead they are set on fire. Current burn time is 30 seconds.
+- Tanks no longer go AI after third pass, instead they are set on fire. Current burn time is 30 seconds from max hp. They can not be extinguished.
 - After the tank fight, the infected team will now see damage dealt to health bonus, rather than damage dealt to tank. Spectators see both.
 - Votes can now be called 40s after map change or once 6 players have loaded.
 - Survivors can no longer shove other survivors, which slowed them and shook their screen.
-- Survivors now have infinite ammo during readyup, meaning they can no longer run out of ammo pregame on dead center or hard rain.
 - The bunny-hopping window as jockey has been extended by .05 seconds.
 - Survivors are no longer slowed / held in place after being cleared from a smoker, they can now instantly move at full speed.
 - Tank slowdown is now proportional based on weapon and distance: Uzis deal 80% slowdown, shotguns deal 50%. When an uzi deals 1 damage, it provides <1% slowdown to the tank.
@@ -28,11 +27,13 @@
 - You can change from boomer to spitter (and back) while tank is up by right-clicking.
 - Fixed a bug where spitter limit didn't get reset if tank disconnected, was sm_kicked, or level was changed via changelevel or sm_map.
 - Pistol fire rate is now capped: 0.1 seconds for dual pistols, 0.2 seconds for single, and 0.3 while incapped.
-- Dual pistols can be autofired by holding mouse1 at 0.3 seconds per shot.
+- Dual pistols can be autofired by holding mouse1 at 0.3 seconds per shot, similar to tf2.
 - Special infected no longer deal damage to witches. Scratch away!
 - Health bonus now correctly handles incapped and ledge-hung survivors.
 - Health bonus can no longer be manipulated by passing pills.
 - Made another attempt to fix silent jockeys. If you have any recorded evidence (demo, cast) of this taking place, please tell us!
+- Re-added molotovs. They will now work as previously intended. (Will not ignite infected, just deal AOE damage)
+
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
