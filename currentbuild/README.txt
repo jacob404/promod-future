@@ -1,5 +1,7 @@
 4.5
 - Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
+- Forced all crouching hunter to emit sound
+- Fixed gun drop bug
 - Fixed tanks dealing self-damage with hittables.
 - Added AutoPause: Game automatically pauses when a player crashes. If an infected player crashes, their spawn timer is restored upon rejoining.
 - Fixed various double-getups.
