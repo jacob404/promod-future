@@ -1,5 +1,7 @@
 4.5
 - Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
+- Fixed spawn timers being set too low in reflux.
+- Fixed boomer hordes being too large in reflux.
 - Forced all crouching hunters to emit sound, even if they are not holding crouch.
 - Fixed a bug which could cause survivors to drop their gun when being punched by a tank while their melee is equipped.
 - Fixed tanks dealing self-damage with hittables.
