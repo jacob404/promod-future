@@ -38,6 +38,7 @@
 - Made another attempt to fix silent jockeys. If you have any recorded evidence (demo, cast) of this taking place, please tell us!
 - Re-added molotovs. They will now work as previously intended. (Will not ignite infected, just deal AOE damage)
 - Jockeys will no longer latch onto ladders while riding a survivor. (They will drop normally, rather than sliding slowly down the ladder)
+- Tanks will now lose rage normally while survivors are in any saferoom.
 
 
 4.4.2
