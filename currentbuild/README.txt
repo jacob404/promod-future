@@ -6,6 +6,7 @@
 - Forced all crouching hunters to emit sound, even if they are not holding crouch.
 - Fixed a bug which could cause survivors to drop their gun when being punched by a tank while their melee is equipped.
 - Fixed tanks dealing self-damage with hittables.
+- Fixed a potential exploit with the death cam skip block.
 - Added AutoPause: Game automatically pauses when a player crashes. If an infected player crashes, their spawn timer is restored upon rejoining.
 - Fixed various double-getups.
 - Fixed a bug where punching a player who was jockeyed would not give them a getup.
@@ -36,6 +37,8 @@
 - Health bonus can no longer be manipulated by passing pills.
 - Made another attempt to fix silent jockeys. If you have any recorded evidence (demo, cast) of this taking place, please tell us!
 - Re-added molotovs. They will now work as previously intended. (Will not ignite infected, just deal AOE damage)
+- Jockeys will no longer latch onto ladders while riding a survivor. (They will drop normally, rather than sliding slowly down the ladder)
+
 
 4.4.2
 - Fixed some unbreakable doors becoming breakable on round start.
