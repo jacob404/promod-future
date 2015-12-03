@@ -1,4 +1,5 @@
 4.5
+- Snow and Christmas lights are back for a limited time. Another campaign has been lit up this year! Snow can be disabled with !nosnow
 - Blocked audio lines and captions for when a survivor sees a hunter, to prevent sneaky hunters being exposed.
 - Fixed spawn timers being set too low in reflux.
 - Fixed boomer hordes being too large in reflux.
@@ -39,6 +40,56 @@
 - Re-added molotovs. They will now work as previously intended. (Will not ignite infected, just deal AOE damage)
 - Jockeys will no longer latch onto ladders while riding a survivor. (They will drop normally, rather than sliding slowly down the ladder)
 - Tanks will now lose rage normally while survivors are in any saferoom.
+- Retro and Reflux now share the Hunters stripper folder. (Reduced package size quite a bit)
+- Removed orange traffic cone props (prop_physics only) from all maps due to blocking hittables and having exploit potential.
+- Map Distance Rebalancing: All non-finale maps now have between 400 and 600 distance points. In addition, all 5 map campaigns are now equal in value and worth a total of 2800 points (Valve maps only). 
+
+Map Changes:
+
+Arena Of The Dead 1
+- Unblocked alternate path outside.
+
+Dark Carnival 2
+- Added an ammo pile near the carousel for late Tank fights
+- Blocked Survivors from jumping on the soda machine at the very end of the map
+
+Dark Carnival 3
+- Added some props to reduce available space in the saferoom to discourage players from fighting the Tank there (like in Dark Carnival 4)
+- Increased the chances that an outside pre-coaster Tank can spawn by modifying the ban range to begin at 60% rather than 55% (coaster Tanks are still banned)
+- Blocked Survivors from jumping across the fence to skip the coaster ramp choke
+- Blocked an exploit to jump to the end of the coaster after the one way drop by climbing up wood pieces
+
+Dark Carnival 4
+- Blocked Survivors from getting punched out of bounds under the awning near the bumper cars
+- Blocked two stuck spots underneath the event button roof
+
+Dark Carnival 5
+- Re-added two fireworks boxes
+- Fixed players getting stuck under the left-side helicopter when it arrives by adding two props to block the stuck spot
+
+Swamp Fever 3
+- Blocked a stuck spot in a small shack 
+
+Swamp Fever 4
+- Blocked Survivors from jumping on the fence before the town
+- Removed a wooden fence prop near the hittable log
+
+Hard Rain 2 & 3
+- Blocked Survivors from being able to skip the sugarcane field by getting onto the warehouse roof beside it
+- Fixed Hard Rain 3 missing some exploit fixes present in map 2
+
+The Parish 2
+- Changed weapon spawn near restrooms to pump shotgun
+- Fixed Witches spawning in the end saferoom
+- Blocked Survivors from getting on top of the various soda machines, televisions, barricades, and windowsills in the bus station due to no navigation mesh
+- Fixed the large sign on the bus station being see-through from behind
+- Removed the annoying event alarm sound
+
+No Mercy 3
+- Fixed being unable to open the way-back door after the event
+
+No Mercy 4
+- Blocked Survivors from climbing on top of the barricades / windows in the break room Tank fighting area
 
 
 4.4.2
