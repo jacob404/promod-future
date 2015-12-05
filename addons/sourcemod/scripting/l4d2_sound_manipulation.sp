@@ -140,13 +140,12 @@ public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 		}
 	} else if (StrEqual(sample, "player/jumplanding_zombie.wav")) {
 		if (GetEntData(entity, isGhostOffset)) {
-			for (new i=0; i<sizeof(clients); i++) {
-				if (!IsClientInGame(clients[i])) continue;
-				if (IsFakeClient(clients[i])) continue;
-				// Don't play this sound to survivors.
-				if (GetClientTeam(clients[i]) == 2) {
-					numClients--;
-					clients[i] = 0;
+			numClients = 0;
+			for (new client=1; client<=MaxClients; client++) {
+				if (!IsClientInGame(client)) continue;
+				if (IsFakeClient(client)) continue;
+				if (GetClientTeam(client) == 2) {
+					clients[numClients++] = client;
 				}
 			}
 			return Plugin_Changed;
