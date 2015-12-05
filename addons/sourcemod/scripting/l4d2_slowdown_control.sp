@@ -50,6 +50,7 @@ new Handle:hCvarSdGunfireTank;
 new Handle:hCvarSdInwaterTank;
 new Handle:hCvarSdInwaterSurvivor;
 new Handle:hCvarSdInwaterDuringTank;
+new Handle:hCvarSdChangePrint;
 new Handle:hCvarSurvivorLimpspeed;
 
 new bool:tankInPlay = false;
@@ -70,6 +71,7 @@ public OnPluginStart()
 	hCvarSdInwaterTank = CreateConVar("l4d2_slowdown_water_tank", "-1", "Maximum slowdown in the water for the Tank (-1: native slowdown; 0.0: No slowdown, 0.01-1.0: 1%%-100%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	hCvarSdInwaterSurvivor = CreateConVar("l4d2_slowdown_water_survivors", "-1", "Maximum slowdown in the water for the Survivors outside of Tank fights (-1: native slowdown; 0.0: No slowdown, 0.01-2.0: 1%%-200%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 2.0);
 	hCvarSdInwaterDuringTank = CreateConVar("l4d2_slowdown_water_survivors_during_tank", "0", "Maximum slowdown in the water for the Survivors during Tank fights (0: ignore setting; 0.01-2.0: 1%%-200%% slowdown)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
+	hCvarSdChangePrint = CreateConVar("l4d2_slowdown_print", "0", "Print when we change water slowdown values?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	hCvarSdPistolMod = CreateConVar("l4d2_slowdown_pistol_percent", "0.0", "Pistols cause this much slowdown * l4d2_slowdown_gunfire at maximum damage.");
 	hCvarSdDeagleMod = CreateConVar("l4d2_slowdown_deagle_percent", "0.1", "Deagles cause this much slowdown * l4d2_slowdown_gunfire at maximum damage.");
@@ -99,7 +101,7 @@ public TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 		
 	tankInPlay = true;
-	if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0) 
+	if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0 && GetConVarBool(hCvarSdChangePrint)) 
 	{
 		PrintToChatAll("\x05Water Slowdown\x01 has been reduced while Tank is in play.");
 	}

@@ -2,7 +2,7 @@
 - Fixed spechud / tankhud not loading.
 - Fixed tanks passing to a 2nd player rather than being lit on fire. (Should also fix spitters being in spawn rotation during tank)
 - Fixed a debug print parsing when a player is incapped by witch.
-- Fixed missing props on Parish 3.
+- Fixed some props being missing on Parish 3.
 - Fixed an invis wall blocking survivors from advancing through the map on Hard Rain 3.
 
 4.5
