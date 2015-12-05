@@ -42,7 +42,6 @@ new Handle:hTankPrint;
 new Handle:hTankDebug;
 new Handle:hLightTank;
 new Handle:hLightTankDuration;
-new Handle:hTankPass; // Replicated from local to prevent tampering.
 new tank_fire_immunity; // Saved from before tank is lit.
 new bool:tankEnteredWater;
 new tankPass;
@@ -106,7 +105,10 @@ public OnPluginStart()
     hTankDebug = CreateConVar("tankcontrol_debug", "0", "Whether or not to debug to console", FCVAR_PLUGIN);
     hLightTank = CreateConVar("tankcontrol_light", "1", "Light the tank on fire when it loses second pass, rather than sending it AI.");
     hLightTankDuration = CreateConVar("tankcontrol_burn_time", "30.0", "Length of the third tank pass (on fire)", _, true, 1.0, true, 1000.0);
-    hTankPass = CreateConVar("tank_pass_number", "1", "Current tank pass. This cvar is replicated, changing it has no effect.", FCVAR_CHEAT & FCVAR_REPLICATED);
+    CreateNative("L4D_Tank_Control_GetTankPassedCount", Native_GetPassCount);
+    RegPluginLibrary("l4d_tank_control");
+}
+
 public Native_GetPassCount(Handle:plugin, numParams) {
     return tankPass;
 }
@@ -388,7 +390,6 @@ public chooseTank()
 
 public resetTank() {
     tankPass = 1;
-    SetConVarInt(hTankPass, 1);
     if (GetConVarBool(hLightTank)) {
         SetConVarInt(FindConVar("tank_fire_immunity"), tank_fire_immunity);
         SetConVarInt(FindConVar("z_frustration"), 1);
@@ -406,7 +407,6 @@ public Action:L4D_OnTryOfferingTankBot(tank_index, &bool:enterStatis)
     if (! IsFakeClient(tank_index))
     {
         tankPass++;
-        SetConVarInt(hTankPass, tankPass);
         SetTankFrustration(tank_index, 100);
         if (GetConVarBool(hLightTank)) {
             if (tankPass >= 3) {

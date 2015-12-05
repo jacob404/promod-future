@@ -30,6 +30,8 @@
 #undef REQUIRE_PLUGIN
 #include <l4d2_scoremod>
 #include <scoremod2>
+#include <l4d_tank_control>
+#define REQUIRE_PLUGIN
 
 #define SPECHUD_DRAW_INTERVAL   0.5
 
@@ -80,6 +82,7 @@ new bool:bTankHudActive[MAXPLAYERS + 1];
 new bool:bTankHudHintShown[MAXPLAYERS + 1];
 
 new scoremode; // Tracks which scoremod plugin is loaded.
+new bool:isTankControlLoaded;
 
 public Plugin:myinfo =
 {
@@ -110,6 +113,7 @@ public OnAllPluginsLoaded()
 	if (LibraryExists("scoremod2")) {
 		scoremode |= ScoreMod2;
 	}
+	isTankControlLoaded = LibraryExists("l4d_tank_control");
 }
 public OnLibraryRemoved(const String:name[])
 {
@@ -117,6 +121,8 @@ public OnLibraryRemoved(const String:name[])
 		scoremode &= ~L4D2_ScoreMod;
 	} else if (strcmp(name, "scoremod2") == 0) {
 		scoremode &= ~ScoreMod2;
+	} else if (strcmp(name, "l4d_tank_control") == 0) {
+		isTankControlLoaded = false;
 	}
 }
 public OnLibraryAdded(const String:name[])
@@ -125,6 +131,8 @@ public OnLibraryAdded(const String:name[])
 		scoremode |= L4D2_ScoreMod;
 	} else if (strcmp(name, "scoremod2") == 0) {
 		scoremode |= ScoreMod2;
+	} else if (strcmp(name, "l4d_tank_control") == 0) {
+		isTankControlLoaded = true;
 	}
 }
 
@@ -384,7 +392,10 @@ bool:FillTankInfo(Handle:hSpecHud, bool:bTankHUD = false)
 	}
 
 	// Draw owner & pass counter
-	new passCount = GetConVarInt(FindConVar("tank_pass_number"));
+	new passCount = L4D2Direct_GetTankPassedCount();
+	if (isTankControlLoaded) {
+		passCount = L4D_Tank_Control_GetTankPassedCount();
+	}
 	switch (passCount)
 	{
 		case 0: Format(info, sizeof(info), "native");
