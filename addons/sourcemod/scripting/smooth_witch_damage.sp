@@ -31,7 +31,7 @@ public Plugin:myinfo =
 	url = "https://github.com/jacob404/Pro-Mod-4.0/releases/latest"
 }
 
-new const bool:DEBUG = true;
+new const bool:DEBUG = false;
 
 new Float:witchDamage;
 new Handle:deadWitches;
