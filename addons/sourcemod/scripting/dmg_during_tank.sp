@@ -19,13 +19,16 @@
 	with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <sourcemod>
+#undef REQUIRE_PLUGIN
 #include <l4d2_scoremod>
-#define L4D2UTIL_STOCKS_ONLY 1
-#include <l4d2util>
+#include <scoremod2>
+#define REQUIRE_PLUGIN
 #pragma semicolon 1
 
-new damageToTank[9];
-new String:playerNames[9][128];
+#define L4D2_ScoreMod 1
+#define ScoreMod2 2
+
+new damageToTank[32+1];
 new Handle:printTankName;
 new Handle:printTankDamage;
 new Handle:printPlayerHB;
@@ -34,6 +37,7 @@ new tankHealth;
 new lastTankHealth;
 new preTankHB;
 new incapOffset;
+new scoremode; // Tracks which scoremod plugin is loaded.
 
 public Plugin:myinfo = {
     name = "Damage During Tank",
@@ -54,14 +58,38 @@ public OnPluginStart() {
     printTankName = CreateConVar("tankdamage_print_name", "1", "Print the name of the tank when it dies.");
     printPlayerHB = CreateConVar("tankdamage_print_survivor_hb", "1", "Announce damage done to survivor health bonus when the tank dies.");
 
-    playerNames[8] = "Self";
     tankInPlay = false;
     incapOffset = FindSendPropInfo("Tank", "m_isIncapacitated");
-    InitSurvivorModelTrie(); // Not necessary, but speeds up IdentifySurvivor() calls.
+}
+
+public OnAllPluginsLoaded()
+{
+    if (LibraryExists("l4d2_scoremod")) {
+        scoremode |= L4D2_ScoreMod;
+    }
+    if (LibraryExists("scoremod2")) {
+        scoremode |= ScoreMod2;
+    }
+}
+public OnLibraryRemoved(const String:name[])
+{
+    if (strcmp(name, "l4d2_scoremod") == 0) {
+        scoremode &= ~L4D2_ScoreMod;
+    } else if (strcmp(name, "scoremod2") == 0) {
+        scoremode &= ~ScoreMod2;
+    }
+}
+public OnLibraryAdded(const String:name[])
+{
+    if (strcmp(name, "l4d2_scoremod") == 0) {
+        scoremode |= L4D2_ScoreMod;
+    } else if (strcmp(name, "scoremod2") == 0) {
+        scoremode |= ScoreMod2;
+    }
 }
 
 public round_start(Handle:event, const String:name[], bool:dontBroadcast) {
-    for (new i=0; i<8; i++) {
+    for (new i=0; i<33; i++) {
         damageToTank[i] = 0;
     }
 }
@@ -70,19 +98,24 @@ public tank_spawn(Handle:event, const String:name[], bool:dontBroadcast) {
     tankInPlay = true;
     tankHealth = GetConVarInt(FindConVar("z_tank_health"))*3/2; // Valve are stupid and multiple tank health by 1.5 in versus.
     lastTankHealth = tankHealth;
-    preTankHB = HealthBonus();
+    if (scoremode & L4D2_ScoreMod == L4D2_ScoreMod) {
+        preTankHB = HealthBonus();
+    } else if (scoremode & ScoreMod2 == ScoreMod2) {
+        preTankHB = DamageBonus();
+    }
 }
 
 public player_hurt(Handle:event, const String:name[], bool:dontBroadcast) {
     if (!tankInPlay) return;
     new victim = GetClientOfUserId(GetEventInt(event, "userid"));
     new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    if (attacker <= 0 || attacker > MaxClients) return;
+    if (!IsClientInGame(attacker)) return;
     if (GetEntProp(victim, Prop_Send, "m_zombieClass") == 8 && !GetEntData(victim, incapOffset)) { // Tanks while incapped (dying animation) can still "take damage", which calls this.
-        new SurvivorCharacter:survivor = IdentifySurvivor(attacker);
-        if (survivor != SC_NONE) {
-            damageToTank[survivor] += GetEventInt(event, "dmg_health");
-        } else if (victim == attacker) {
-            damageToTank[8] += GetEventInt(event, "dmg_health");
+        if (victim == attacker) {
+            damageToTank[32] += GetEventInt(event, "dmg_health");
+        } else {
+            damageToTank[attacker] += GetEventInt(event, "dmg_health");
         }
         lastTankHealth = GetEventInt(event, "health");
     }
@@ -90,6 +123,7 @@ public player_hurt(Handle:event, const String:name[], bool:dontBroadcast) {
 
 public tank_death(Handle:event, const String:name[], bool:dontBroadcast) {
     new tank = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (tank <= 0 || tank > MaxClients) return;
     if (!IsClientInGame(tank)) return;
     if (GetEntProp(tank, Prop_Send, "m_zombieClass") != 8) return;
     TryPrintTankDamage(tank);
@@ -128,21 +162,18 @@ public TryPrintTankDamage(tank) {
 
     SortCustom1D(sortArray, sizeof(sortArray), sortTankDamage);
 
-    for (new client=1; client<MaxClients; client++) {
-        if (!IsClientInGame(client)) continue;
-        new SurvivorCharacter:survivor = IdentifySurvivor(client);
-        if (survivor == SC_NONE) continue;
-        decl String:playerName[128];
-        GetClientName(client, playerName, sizeof(playerName));
-        playerNames[survivor] = playerName;
-    }
-
     if (GetConVarBool(printTankDamage)) {
         PrintDamageDealtToTank(tank, sortArray);
     }
 
     if (GetConVarBool(printPlayerHB)) {
-        PrintHBDamageDealtToSurvivors(HealthBonus());
+        new postTankHB;
+        if (scoremode & L4D2_ScoreMod == L4D2_ScoreMod) {
+    	    postTankHB = HealthBonus();
+    	} else if (scoremode & ScoreMod2 == ScoreMod2) {
+    	    postTankHB = DamageBonus();
+    	}
+        PrintHBDamageDealtToSurvivors(postTankHB);
     }
 }
 
@@ -167,7 +198,7 @@ PrintDamageDealtToTank(tank, sortArray[]) {
         for (new i=0; i<sizeof(damageToTank); i++) {
             new j = sortArray[i];
             if (damageToTank[j] == 0) continue;
-            PrintToChat(client, "\x05%4d\x01 [\x04%.02f%%\x01]:\t\x03%s\x01", damageToTank[j], damageToTank[j]*100.0/tankHealth, playerNames[j]);
+            PrintToChat(client, "\x05%4d\x01 [\x04%.02f%%\x01]:\t\x03%N\x01", damageToTank[j], damageToTank[j]*100.0/tankHealth, j);
         }
     }
 }
@@ -175,7 +206,9 @@ PrintDamageDealtToTank(tank, sortArray[]) {
 PrintHBDamageDealtToSurvivors(postTankHB) {
     for (new client=1; client<=MaxClients; client++) {
         if (!IsClientInGame(client)) continue;
-        if (GetClientTeam(client) == 2) continue; // Don't print health bonus damage to tank to the survivor team.
+        // Don't print health bonus damage to tank to the survivor team.
+        // If no scoremods are loaded, print anyways as a backup.
+        if (scoremode != 0 && GetClientTeam(client) == 2) continue;
         PrintToChat(client, "[SM] Damage dealt to health bonus:\t\x05%4d\x01", preTankHB-postTankHB);
     }
 }
