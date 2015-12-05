@@ -93,32 +93,31 @@ public OnPluginStart()
 	HookEvent("round_end", RoundEnd);
 }
 
-public TankSpawn(Handle:event, const String:name[], bool:dontBroadcast) 
+public TankSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (tankInPlay) 
+	if (tankInPlay)
 		return;
-		
-	tankInPlay = true;
-	if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0) 
+
+	if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0)
 	{
+		tankInPlay = true;
 		PrintToChatAll("\x05Water Slowdown\x01 has been reduced while Tank is in play.");
 	}
 }
 
-public TankDeath(Handle:event, const String:name[], bool:dontBroadcast) 
+public TankDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (IsInfected(client) && IsTank(client)) 
+	if (IsInfected(client) && IsTank(client))
 	{
-		tankInPlay = false;
 		if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0) {
-		
+			tankInPlay = false;
 			PrintToChatAll("\x05Water Slowdown\x01 has been restored to normal.");
 		}
 	}
 }
 
-public RoundEnd(Handle:event, const String:name[], bool:dontBroadcast) 
+public RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	tankInPlay = false;
 }
@@ -129,10 +128,10 @@ public RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
  *
 **/
 
-public PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) 
+public PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!IsInfected(client)) 
+	if (!IsInfected(client))
 		return;
 
 	new Float:slowdown = IsTank(client) ? GetActualValue(hCvarSdGunfireTank) : GetActualValue(hCvarSdGunfireSi);
@@ -159,15 +158,15 @@ public PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
  *
 **/
 
-public L4D2_OnWaterMove(client) 
+public L4D2_OnWaterMove(client)
 {
 	// L4D2_OnWaterMove can trigger while in noclip.
-	if (!(GetEntityFlags(client) & FL_INWATER)) 
+	if (!(GetEntityFlags(client) & FL_INWATER))
 		return;
 
-	if (IsSurvivor(client) && !IsLimping(client)) 
+	if (IsSurvivor(client) && !IsLimping(client))
 	{
-		if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0 && tankInPlay) 
+		if (GetConVarFloat(hCvarSdInwaterDuringTank) > 0.0 && tankInPlay)
 		{
 			ApplySlowdown(client, GetConVarFloat(hCvarSdInwaterDuringTank));
 		}
@@ -175,8 +174,8 @@ public L4D2_OnWaterMove(client)
 		{
 			ApplySlowdown(client, GetActualValue(hCvarSdInwaterSurvivor));
 		}
-	} 
-	else if (IsInfected(client) && IsTank(client)) 
+	}
+	else if (IsInfected(client) && IsTank(client))
 	{
 		ApplySlowdown(client, GetActualValue(hCvarSdInwaterTank));
 	}
@@ -188,7 +187,7 @@ Float:GetActualValue(Handle:cvar)
 	new Float:value = GetConVarFloat(cvar);
 	if (value == -1.0)  // native slowdown
 		return -1.0;
-		
+
 	if (value == 0.0)   // slowdown off
 		return 1.0;
 
@@ -255,7 +254,7 @@ GetScaleAndModifier(&Float:scale, &Float:modifier, const String:weapon[], damage
 	// Scout   | 90  | 90 <- No fall-off
 	// Military| 90  | 90 <- No fall-off
 	// SMGs and Shotguns are using quadratic scaling, meaning that shooting long ranged is punished more harshly.
-	if (strcmp(weapon, "melee") == 0) 
+	if (strcmp(weapon, "melee") == 0)
 	{
 		// Melee damage scales with tank health, so don't bother handling it here.
 		scale = 1.0;
