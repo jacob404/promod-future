@@ -38,8 +38,8 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-    infected_fire_immunity = CreateConVar("infected_fire_immunity", "3", "What type of fire immunity should infected have? 0 = None, 3 = Extinguish burns, 2 = Prevent burns, 1 = Complete immunity", FCVAR_PLUGIN, true, 0.0, true, 3.0);
-    tank_fire_immunity = CreateConVar("tank_fire_immunity", "2", "What type of fire immunity should the tank have? 0 = None, 3 = Extinguish burns, 2 = Prevent burns, 1 = Complete immunity", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+    infected_fire_immunity = CreateConVar("infected_fire_immunity", "3", "What type of fire immunity should infected have? 0 = None, 1 = Moderate burn damage, 2 = Minor Burn Damage, 3 = Complete immunity", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+    tank_fire_immunity = CreateConVar("tank_fire_immunity", "2", "What type of fire immunity should the tank have? 0 = None, 1 = Moderate burn damage, 2 = Minor Burn Damage, 3 = Complete immunity", FCVAR_PLUGIN, true, 0.0, true, 3.0);
     HookEvent("player_hurt",SIOnFire);
 }
 
@@ -57,22 +57,22 @@ public SIOnFire(Handle:event, const String:name[], bool:dontBroadcast)
     // entityflame is caused by fire bullets.
     if (strcmp(weapon, "inferno") == 0 || attacker == 0 || strcmp(weapon, "entityflame") == 0) {
         if (GetEntProp(client, Prop_Send, "m_zombieClass") == 8) {
-            if(GetConVarInt(tank_fire_immunity) == 3) CreateTimer(1.0, Extinguish, client);
+            if(GetConVarInt(tank_fire_immunity) == 1) CreateTimer(1.0, Extinguish, client);
 
-            if(GetConVarInt(tank_fire_immunity) <= 2) ExtinguishEntity(client);
+            if(GetConVarInt(tank_fire_immunity) >= 2) ExtinguishEntity(client);
 
-            if(GetConVarInt(tank_fire_immunity) == 1)
+            if(GetConVarInt(tank_fire_immunity) == 3)
             {
                 new CurHealth = GetClientHealth(client);
                 new DmgDone	= GetEventInt(event,"dmg_health");
                 SetEntityHealth(client,(CurHealth + DmgDone));
             }
         } else {
-            if(GetConVarInt(infected_fire_immunity) == 3) CreateTimer(1.0, Extinguish, client);
+            if(GetConVarInt(infected_fire_immunity) == 1) CreateTimer(1.0, Extinguish, client);
 
-            if(GetConVarInt(infected_fire_immunity) <= 2) ExtinguishEntity(client);
+            if(GetConVarInt(infected_fire_immunity) >= 2) ExtinguishEntity(client);
 
-            if(GetConVarInt(infected_fire_immunity) == 1)
+            if(GetConVarInt(infected_fire_immunity) == 3)
             {
                 new CurHealth = GetClientHealth(client);
                 new DmgDone	= GetEventInt(event,"dmg_health");
