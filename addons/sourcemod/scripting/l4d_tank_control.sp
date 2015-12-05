@@ -26,8 +26,10 @@
 #include <l4d2util>
 #include <l4d2_direct>
 #include <left4downtown>
-#include <readyup>
 #include <colors>
+#undef REQUIRE_PLUGIN
+#include <readyup>
+#define REQUIRE_PLUGIN
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
 #define IS_INFECTED(%1)         (GetClientTeam(%1) == 3)
@@ -44,6 +46,7 @@ new Handle:hTankPass; // Replicated from local to prevent tampering.
 new tank_fire_immunity; // Saved from before tank is lit.
 new bool:tankEnteredWater;
 new tankPass;
+new bool:isReadyUpLoaded;
 
 public Plugin:myinfo =
 {
@@ -104,6 +107,25 @@ public OnPluginStart()
     hLightTank = CreateConVar("tankcontrol_light", "1", "Light the tank on fire when it loses second pass, rather than sending it AI.");
     hLightTankDuration = CreateConVar("tankcontrol_burn_time", "30.0", "Length of the third tank pass (on fire)", _, true, 1.0, true, 1000.0);
     hTankPass = CreateConVar("tank_pass_number", "1", "Current tank pass. This cvar is replicated, changing it has no effect.", FCVAR_CHEAT & FCVAR_REPLICATED);
+public Native_GetPassCount(Handle:plugin, numParams) {
+    return tankPass;
+}
+
+public OnAllPluginsLoaded()
+{
+    isReadyUpLoaded = LibraryExists("readyup");
+}
+public OnLibraryRemoved(const String:name[])
+{
+    if (strcmp(name, "readyup") == 0) {
+        isReadyUpLoaded = false;
+    }
+}
+public OnLibraryAdded(const String:name[])
+{
+    if (strcmp(name, "readyup") == 0) {
+        isReadyUpLoaded = true;
+    }
 }
 
 /**
@@ -514,12 +536,12 @@ stock PrintToInfected(const String:Message[], any:... )
 
     for (new i = 1; i <= MaxClients; i++)
     {
-        if (!IS_VALID_INFECTED(i) && !IsClientCaster(i))
-        {
-            continue;
+        if (!IS_VALID_INGAME(i)) continue;
+        if (IS_INFECTED(i)) {
+            CPrintToChat(i, "{default}%s", sPrint);
+        } else if (isReadyUpLoaded && IsClientCaster(i)) {
+            CPrintToChat(i, "{default}%s", sPrint);
         }
-
-        CPrintToChat(i, "{default}%s", sPrint);
     }
 }
 
