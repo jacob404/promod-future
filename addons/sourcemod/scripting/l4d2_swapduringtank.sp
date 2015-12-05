@@ -97,10 +97,8 @@ public PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new class = GetEntProp(client, Prop_Send, "m_zombieClass");
 	// I set the boomer limit to 0 once someone gets one. In other words, we pretend their spitter is a boomer and don't allow anyone else to get one. Once their SI dies (spitter or boomer), we allow another player to get one.
 	if (g_bIsTankAlive && (class == 4 || class == 2)) {
-		PrintToChatAll("<94>Tank alive, spitter/boomer died, resetting boomer limit:");
 		SetConVarInt(g_hBoomerLimit, 1);
 	} else if (class == 8) {
-		PrintToChatAll("<98>Tank died, resetting boomer and spitter limit");
 		g_bIsTankAlive = false;
 		SetConVarInt(g_hSpitterLimit, 1);
 		SetConVarInt(g_hBoomerLimit, 1);
@@ -115,7 +113,6 @@ public PlayerDisconnect(Handle:event, const String:name[], bool:dontBroadcast) {
 	if (GetClientTeam(client) != 3) return;
 	new class = GetEntProp(client, Prop_Send, "m_zombieClass");
 	if (class == 2 || class == 4) {
-		PrintToChatAll("<98>Boomer/spitter dc'd, resetting limit");
 		SetConVarInt(g_hBoomerLimit, 1);
 	}
 	CreateTimer(1.0, TankDisconnect);
@@ -128,11 +125,9 @@ public Action:TankDisconnect(Handle:timer) {
 		if (!IsClientInGame(i)) continue;
 		if (GetClientTeam(i) != 3) continue;
 		if (GetEntProp(i, Prop_Send, "m_zombieClass") != 8) continue;
-		PrintToChatAll("<126>Tank still alive");
 		g_bIsTankAlive = true;
 	}
 	if (!g_bIsTankAlive) {
-		PrintToChatAll("<130>Tank dc'd, resetting boomer and spitter limit");
 		SetConVarInt(g_hSpitterLimit, 1);
 		SetConVarInt(g_hBoomerLimit, 1);
 	}
@@ -141,7 +136,6 @@ public Action:TankDisconnect(Handle:timer) {
 // Round ends without tank death
 public RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	PrintToChatAll("<137>Round ended, resetting boomer and spitter limit");
 	g_bIsTankAlive = false;
 	SetConVarInt(g_hSpitterLimit, 1);
 	SetConVarInt(g_hBoomerLimit, 1);
@@ -149,7 +143,6 @@ public RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 // Map changed via changelevel, sm_map
 public OnMapChange() {
-	PrintToChatAll("<146>Map changed, resetting boomer and spitter limit");
 	g_bIsTankAlive = false;
 	SetConVarInt(g_hSpitterLimit, 1);
 	SetConVarInt(g_hBoomerLimit, 1);
@@ -158,7 +151,6 @@ public OnMapChange() {
 // Plugin unloaded
 public OnPluginEnd()
 {
-	PrintToChatAll("<156>Plugin unloaded, resetting boomer and spitter limit");
 	SetConVarInt(g_hSpitterLimit, 1);
 	SetConVarInt(g_hBoomerLimit, 1);
 }
