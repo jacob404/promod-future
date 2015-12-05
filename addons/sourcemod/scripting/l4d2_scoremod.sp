@@ -272,6 +272,7 @@ public Action:SM_PlayerDeath_Event(Handle:event, const String:name[], bool:dontB
 	if (!SM_bModuleIsEnabled) return;
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	// Can't just check for fakeclient
+	if (client <= 0 || client > MaxClients) return;
 	if(client && GetClientTeam(client) == 2)
 	{
 		SetConVarInt(SM_hSurvivalBonus, SM_CalculateSurvivalBonus());
