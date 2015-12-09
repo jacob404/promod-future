@@ -9,6 +9,8 @@
 - Fixed boomers / spitters not being in spawn rotation after tanks.
 - You can no longer swap between boomer and spitter if your team has both a boomer and a spitter.
 - Fixed players being unable to move in water when tank is in play.
+- Fixed health bonus not loading.
+- Fixed special infected being slowed down by bullets.
 
 4.5
 - Snow and Christmas lights are back for a limited time. Another campaign has been lit up this year! Snow can be disabled with !nosnow
