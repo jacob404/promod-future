@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import os, re, urllib2
 config_files = []
 scripts = []

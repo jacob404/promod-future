@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 from os import listdir, sep
 from os.path import isdir
 from platform import system as platform
