@@ -178,6 +178,7 @@ public Action:newGame(Handle:timer)
 public RoundEnd_Event(Handle:event, const String:name[], bool:dontBroadcast)
 {
     queuedTankSteamId = "";
+    resetTank();
 }
 
 /**

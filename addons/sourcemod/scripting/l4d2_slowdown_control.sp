@@ -64,7 +64,8 @@ public OnPluginStart()
     hCvarSdGunfireTank = CreateConVar("l4d2_slowdown_gunfire_tank", "0.2", "Maxmium slowdown from gunfire for the Tank (-1: native slowdown; 0.0: No slowdown, .01 - 1.00: 1%%-100%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 1.0);
     hCvarSdInwaterTank = CreateConVar("l4d2_slowdown_water_tank", "-1", "Maxmium slowdown in the water for the Tank (-1: native slowdown; 0.0: No slowdown, .01 - 1.00: 1%%-100%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 1.0);
     hCvarSdInwaterSurvivor = CreateConVar("l4d2_slowdown_water_survivors", "-1", "Maxmium slowdown in the water for the Survivors outside of tank (-1: native slowdown; 0.0: No slowdown, .01 - 1.00: 1%%-100%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 1.0);
-    hCvarSdInwaterDuringTank = CreateConVar("l4d2_slowdown_water_during_tank", "1", "Maxmium slowdown in the water for the Survivors during tank (-1: native slowdown; 0.0: No slowdown, .01 - 1.00: 1%%-100%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 1.0);
+    // A negative slowdown will cause an *increase* in speed. In this case, the value is (220/170)-1, which boosts the 170 speed in water up to a 220 speed.
+    hCvarSdInwaterDuringTank = CreateConVar("l4d2_slowdown_water_during_tank", "-0.294", "Maxmium slowdown in the water for the Survivors during tank (-1: native slowdown; 0.0: No slowdown, .01 - 1.00: 1%%-100%% slowdown)", FCVAR_PLUGIN, true, -1.0, true, 1.0);
     hCvarSdChangePrint = CreateConVar("l4d2_slowdown_print", "0", "Print when we change water slowdown values?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
     hCvarSurvivorLimpspeed = FindConVar("survivor_limp_health");
@@ -77,19 +78,17 @@ public OnPluginStart()
 
 public L4D2_OnWaterMove(client) {
     if (GetEntityFlags(client) & FL_INWATER) { // L4D2_OnWaterMove can trigger while in noclip.
+        new Float:slowdown = -1.0;
         if (IsSurvivor(client) && !IsLimping(client)) {
-            decl Float:slowdown;
             if (tankInPlay) {
                 slowdown = GetConVarFloat(hCvarSdInwaterDuringTank);
             } else {
                 slowdown = GetConVarFloat(hCvarSdInwaterSurvivor);
             }
-            if (slowdown != -1) { // Native slowdown
-                ApplySlowdown(client, (1-slowdown)*220/170); // Scales the 0-1 cvar into a 0-220 speed.
-            }
         } else if (IsInfected(client) && IsTank(client)) {
-            ApplySlowdown(client, GetConVarFloat(hCvarSdInwaterTank));
+            slowdown = GetConVarFloat(hCvarSdInwaterTank);
         }
+        ApplySlowdown(client, slowdown);
     }
 }
 
@@ -192,21 +191,20 @@ public PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
     //// 1 - .8 * 0.0625 * .2 = 0.99 -> 99% base speed, or 1% slowdown.
     decl Float:slowdown;
     if (IsTank(client)) {
-        slowdown = 1-modifier*scale*GetConVarFloat(hCvarSdGunfireTank);
+        slowdown = GetConVarFloat(hCvarSdGunfireTank);
     } else {
-        slowdown = 1-modifier*scale*GetConVarFloat(hCvarSdGunfireSi);
+        slowdown = GetConVarFloat(hCvarSdGunfireSi);
     }
-
-    // If the cvar is set to -1 (native), and the modifier is non-0, then we take no action.
-    // If the modifier or scale is 0, but the cvar is non-native, we still call the function in order to override native behavior.
-    if (slowdown <= 1.0 && modifier*scale != 0) {
-        ApplySlowdown(client, slowdown);
+    if (slowdown != -1) {
+        ApplySlowdown(client, slowdown*modifier*scale);
     }
 }
 
 ApplySlowdown(client, Float:value) {
     if (value == -1.0) return;
-    SetEntPropFloat(client, Prop_Send, "m_flVelocityModifier", value);
+    // m_flVelocityModifier value of 1 -> 0% slowdown (full movement)
+    // m_flVelocityModifier value of 0 -> 100% slowdown (no movement)
+    SetEntPropFloat(client, Prop_Send, "m_flVelocityModifier", 1-value);
 }
 
 stock bool:IsSurvivor(client) {

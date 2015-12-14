@@ -20,7 +20,7 @@
 */
 #include <sourcemod>
 #include <sdktools>
-#include include/sdkhooks.inc
+#include <sdkhooks>
 
 public Plugin:myinfo =
 {
@@ -140,19 +140,17 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 	if (GetEntProp(client, Prop_Send, "m_isIncapacitated")) return Plugin_Continue;
 	if (!GetEntProp(activeweapon, Prop_Send, "m_isDualWielding")) return Plugin_Continue;
 
-
 	if (buttons & IN_ATTACK == IN_ATTACK) {
-		if (g_fNextAutoFire[client] == 0.0) { // Signal, indicates client was not previously IN_ATTACK.
+		if (g_fNextAutoFire[client] == 0.0) { // Signal
 			g_fNextAutoFire[client] = GetGameTime() + GetConVarFloat(g_hPistolSlowFire);
 		} else if (GetGameTime() > g_fNextAutoFire[client]) {
 			buttons &= ~IN_ATTACK; // Release M1 for them so the game thinks that they're clicking again next frame.
 			g_fNextAutoFire[client] = GetGameTime() + GetConVarFloat(g_hPistolSlowFire);
+			EmitSoundToAll("weapons/pistol/gunfire/pistol_dual_fire.wav", client, SNDCHAN_VOICE);
 			return Plugin_Changed;
 		}
 	} else {
-		if (g_fNextAutoFire[client] != 0.0) {
-			g_fNextAutoFire[client] = 0.0; // Signal, indicates client not currently IN_ATTACK.
-		}
+		g_fNextAutoFire[client] = 0.0; // Signals client not attacking
 	}
 
 	return Plugin_Continue;
