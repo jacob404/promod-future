@@ -1,20 +1,20 @@
 /*
-    SourceMod Anti-Cheat
-    Copyright (C) 2011-2013 SMAC Development Team <https://bitbucket.org/anticheat/smac/wiki/Credits>
-    Copyright (C) 2007-2011 CodingDirect LLC
+	SourceMod Anti-Cheat
+	Copyright (C) 2011-2013 SMAC Development Team <https://bitbucket.org/anticheat/smac/wiki/Credits>
+	Copyright (C) 2007-2011 CodingDirect LLC
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.	If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma semicolon 1
@@ -24,7 +24,7 @@
 #include <smac>
 #undef REQUIRE_PLUGIN
 #include <basecomm>
-#tryinclude <updater>
+// #tryinclude <updater>
 #include <readyup>
 
 /* Plugin Info */
@@ -109,98 +109,98 @@ public OnPluginStart()
 	g_hCVarADT = CreateArray(64);
 	g_hCVarTrie = CreateTrie();
 
-	//- High Priority -//  Note: We kick them out before hand because we don't want to have to ban them.
-	AddCVarToList("0penscript",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("aim_bot",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("aim_fov",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("bat_version", 		COMP_NONEXIST, 	ACTION_KICK, 	"0.0",	0.0, 	Priority_High);
-	AddCVarToList("beetlesmod_version", 	COMP_NONEXIST,  ACTION_KICK, 	"0.0",  0.0, 	Priority_High);
-	AddCVarToList("est_version", 		COMP_NONEXIST, 	ACTION_KICK, 	"0.0", 	0.0, 	Priority_High);
-	AddCVarToList("eventscripts_ver", 	COMP_NONEXIST, 	ACTION_KICK, 	"0.0", 	0.0, 	Priority_High);
-	AddCVarToList("fm_attackmode",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("lua_open",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("Lua-Engine",		COMP_NONEXIST, 	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("mani_admin_plugin_version", COMP_NONEXIST, ACTION_KICK, 	"0.0", 	0.0, 	Priority_High);
-	AddCVarToList("ManiAdminHacker",	COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("ManiAdminTakeOver",	COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("metamod_version", 	COMP_NONEXIST, 	ACTION_KICK, 	"0.0", 	0.0, 	Priority_High);
-	AddCVarToList("openscript",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("openscript_version",	COMP_NONEXIST,	ACTION_BAN, 	"0.0",	0.0,	Priority_High);
-	AddCVarToList("runnscript",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("SmAdminTakeover", 	COMP_NONEXIST, 	ACTION_BAN,	"0.0", 	0.0,	Priority_High);
-	AddCVarToList("sourcemod_version", 	COMP_NONEXIST, 	ACTION_KICK, 	"0.0", 	0.0, 	Priority_High);
-	AddCVarToList("tb_enabled",		COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
-	AddCVarToList("zb_version", 		COMP_NONEXIST, 	ACTION_KICK, 	"0.0", 	0.0, 	Priority_High);
+	//- High Priority -//	Note: We kick them out before hand because we don't want to have to ban them.
+	AddCVarToList("0penscript",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("aim_bot",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("aim_fov",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("bat_version",				COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("beetlesmod_version",			COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("est_version",				COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("eventscripts_ver",			COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("fm_attackmode",				COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("lua_open",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("Lua-Engine",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("mani_admin_plugin_version",	COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("ManiAdminHacker",			COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("ManiAdminTakeOver",			COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("metamod_version",			COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("openscript",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("openscript_version",			COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("runnscript",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("SmAdminTakeover",			COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("sourcemod_version",			COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
+	AddCVarToList("tb_enabled",					COMP_NONEXIST,	ACTION_BAN,		"0.0",	0.0,	Priority_High);
+	AddCVarToList("zb_version",					COMP_NONEXIST,	ACTION_KICK,	"0.0",	0.0,	Priority_High);
 
-	//- Medium Priority -// Note: Now the client should be clean of any third party server side plugins.  Now we can start really checking.
-	AddCVarToList("sv_cheats", 		COMP_EQUAL, 	ACTION_BAN_IF_NOT_CASTER, 	"0.0", 	0.0, 	Priority_Medium);
-	//AddCVarToList("sv_gravity", 		COMP_EQUAL, 	ACTION_BAN, 	"800.0", 0.0, 	Priority_Medium);
-	AddCVarToList("r_drawothermodels", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Medium);
+	//- Medium Priority -// Note: Now the client should be clean of any third party server side plugins.	Now we can start really checking.
+	AddCVarToList("sv_cheats",			COMP_EQUAL,	ACTION_BAN_IF_NOT_CASTER,	"0.0",		0.0,	Priority_Medium);
+	// AddCVarToList("sv_gravity",		COMP_EQUAL,	ACTION_BAN,					"800.0",	0.0,	Priority_Medium);
+	AddCVarToList("r_drawothermodels",	COMP_EQUAL,	ACTION_BAN,					"1.0",		0.0,	Priority_Medium);
 
 	// Consistency check has been reworked in some engines.
 	new EngineVersion:iEngineVersion = GetEngineVersion();
 
-	if (iEngineVersion != Engine_CSS &&
-		iEngineVersion != Engine_DODS &&
-		iEngineVersion != Engine_HL2DM &&
-		iEngineVersion != Engine_TF2)
-	{
-		AddCVarToList("sv_consistency", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Medium);
+	if (!(iEngineVersion == Engine_CSS || iEngineVersion == Engine_DODS &&
+		iEngineVersion == Engine_HL2DM || iEngineVersion == Engine_TF2)) {
+		AddCVarToList("sv_consistency",	COMP_EQUAL,	ACTION_BAN,	"1.0",	0.0,	Priority_Medium);
 	}
 
 	//- Normal Priority -//
-	AddCVarToList("cl_clock_correction", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("cl_leveloverview", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("cl_overdraw_test", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("cl_phys_timescale", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("cl_showevents", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
+	AddCVarToList("cl_clock_correction",	COMP_EQUAL,	ACTION_BAN,	"1.0",	0.0,	Priority_Low);
+	AddCVarToList("cl_leveloverview",		COMP_EQUAL,	ACTION_BAN,	"0.0",	0.0,	Priority_Low);
+	AddCVarToList("cl_overdraw_test",		COMP_EQUAL,	ACTION_BAN,	"0.0",	0.0,	Priority_Low);
+	AddCVarToList("cl_phys_timescale",		COMP_EQUAL,	ACTION_BAN,	"1.0",	0.0,	Priority_Low);
+	AddCVarToList("cl_showevents",			COMP_EQUAL,	ACTION_BAN,	"0.0",	0.0,	Priority_Low);
 
-	if (SMAC_GetGameType() == Game_INSMOD)
-	{
-		AddCVarToList("fog_enable", 		COMP_EQUAL, 	ACTION_KICK, 	"1.0", 	0.0, 	Priority_Low);
-	}
-	else
-	{
-		AddCVarToList("fog_enable", 		COMP_EQUAL, 	ACTION_BAN_IF_NOT_CASTER, 	"1.0", 	0.0, 	Priority_Low);
+	if (SMAC_GetGameType() == Game_INSMOD) {
+		AddCVarToList("fog_enable",	COMP_EQUAL,	ACTION_KICK,				"1.0",	0.0,	Priority_Low);
+	} else {
+		AddCVarToList("fog_enable",	COMP_EQUAL,	ACTION_BAN_IF_NOT_CASTER,	"1.0",	0.0,	Priority_Low);
 	}
 
 	// This doesn't exist on FoF
-	if (SMAC_GetGameType() == Game_FOF)
-	{
-		AddCVarToList("host_timescale", 	COMP_NONEXIST, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_High);
-	}
-	else
-	{
-		AddCVarToList("host_timescale", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
+	if (SMAC_GetGameType() == Game_FOF) {
+		AddCVarToList("host_timescale",	COMP_NONEXIST,	ACTION_BAN,	"0.0",	0.0,	Priority_High);
+	} else {
+		AddCVarToList("host_timescale",	COMP_EQUAL,		ACTION_BAN,	"1.0",	0.0,	Priority_Low);
 	}
 
-	AddCVarToList("mat_dxlevel", 		COMP_GREATER, 	ACTION_KICK, 	"80.0", 0.0, 	Priority_Low);
-	AddCVarToList("mat_fillrate", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("mat_measurefillrate",	COMP_EQUAL,	ACTION_BAN,	"0.0", 	0.0,	Priority_Low);
-	AddCVarToList("mat_proxy", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("mat_showlowresimage",	COMP_EQUAL, 	ACTION_BAN,	"0.0",	0.0,	Priority_Low);
-	AddCVarToList("mat_wireframe", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("mem_force_flush", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("snd_show", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("snd_visualize", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_aspectratio", 		COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_colorstaticprops", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_DispWalkable", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_DrawBeams", 		COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawbrushmodels", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawclipbrushes", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawdecals", 		COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawentities", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawmodelstatsoverlay",COMP_EQUAL,	ACTION_BAN,	"0.0",	0.0,	Priority_Low);
-	AddCVarToList("r_drawopaqueworld", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawparticles", 	COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawrenderboxes", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawskybox",		COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_drawtranslucentworld", COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_shadowwireframe", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_skybox", 		COMP_EQUAL, 	ACTION_BAN, 	"1.0", 	0.0, 	Priority_Low);
-	AddCVarToList("r_visocclusion", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
-	AddCVarToList("vcollide_wireframe", 	COMP_EQUAL, 	ACTION_BAN, 	"0.0", 	0.0, 	Priority_Low);
+	AddCVarToList("mat_dxlevel",			COMP_GREATER,	ACTION_KICK,				"80.0",		0.0,	Priority_Low);
+	AddCVarToList("mat_fillrate",			COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("mat_measurefillrate",	COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("mat_proxy",				COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("mat_showlowresimage",	COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("mat_wireframe",			COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"0.0",		0.0,	Priority_Low);
+	AddCVarToList("melee_show_swing",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"0.0",		0.0,	Priority_Low);
+	AddCVarToList("mem_force_flush",		COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_aspectratio",			COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_colorstaticprops",		COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_DispWalkable",			COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_DrawBeams",			COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawbrushmodels",		COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawclipbrushes",		COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawdecals",			COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawentities",			COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawmodelstatsoverlay",COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawopaqueworld",		COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawothermodels",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawparticles",		COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawrenderboxes",		COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawskybox",			COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_drawtranslucentworld", COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_shadowwireframe",		COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("r_skybox",				COMP_EQUAL,		ACTION_BAN,					"1.0",		0.0,	Priority_Low);
+	AddCVarToList("r_visocclusion",			COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("snd_show",				COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("snd_visualize",			COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("spec_freeze_time",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"4.0",		0.0,	Priority_Low);
+	AddCVarToList("spec_freeze_traveltime", COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"0.4",		0.0,	Priority_Low);
+	AddCVarToList("spec_keep_team_cc",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"1.0",		0.0,	Priority_Low);
+	AddCVarToList("spec_keep_team_glows",	COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"1.0",		0.0,	Priority_Low);
+	AddCVarToList("vcollide_wireframe",		COMP_EQUAL,		ACTION_BAN,					"0.0",		0.0,	Priority_Low);
+	AddCVarToList("z_nightvision_b",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"128.0",	0.0,	Priority_Low);
+	AddCVarToList("z_nightvision_g",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"192.0",	0.0,	Priority_Low);
+	AddCVarToList("z_nightvision_r",		COMP_EQUAL,		ACTION_BAN_IF_NOT_CASTER,	"255.0",	0.0,	Priority_Low);
 
 	//- Replication Protection -//
 	decl String:sName[MAX_CVAR_NAME_LEN], bool:bIsCommand, iFlags, Handle:hCVar;
@@ -220,7 +220,7 @@ public OnPluginStart()
 			continue;
 
 		// SMAC will not always be the first to load and many plugins (mistakenly) put
-		//  FCVAR_REPLICATED on their version cvar (in addition to FCVAR_PLUGIN or FCVAR_SPONLY)
+		//	FCVAR_REPLICATED on their version cvar (in addition to FCVAR_PLUGIN or FCVAR_SPONLY)
 		if (iFlags & (FCVAR_PLUGIN|FCVAR_SPONLY))
 			continue;
 
@@ -239,9 +239,9 @@ public OnPluginStart()
 	CloseHandle(hConCommand);
 
 	// Commands.
-	RegAdminCmd("smac_addcvar",      Command_AddCVar,  ADMFLAG_ROOT,    "Adds a CVar to the check list.");
-	RegAdminCmd("smac_removecvar",   Command_RemCVar,  ADMFLAG_ROOT,    "Removes a CVar from the check list.");
-	RegAdminCmd("smac_cvars_status", Command_Status,  ADMFLAG_GENERIC,  "Shows the status of all in-game clients.");
+	RegAdminCmd("smac_addcvar",		Command_AddCVar,	ADMFLAG_ROOT,	"Adds a CVar to the check list.");
+	RegAdminCmd("smac_removecvar",	Command_RemCVar,	ADMFLAG_ROOT,	"Removes a CVar from the check list.");
+	RegAdminCmd("smac_cvars_status", Command_Status,	ADMFLAG_GENERIC,	"Shows the status of all in-game clients.");
 
 	// Scramble default CVars.
 	if (g_iADTSize)
@@ -286,8 +286,8 @@ public OnLibraryAdded(const String:name[])
 		Updater_AddPlugin(UPDATE_URL);
 	}
 #endif
- 	if (StrEqual(name, "readyup")) {
- 		g_bReadyUpAvailable = true;
+	if (StrEqual(name, "readyup")) {
+		g_bReadyUpAvailable = true;
 	}
 }
 
@@ -394,7 +394,7 @@ public Action:Command_AddCVar(client, args)
 	if (StrEqual(sBuffer, "warn"))
 		iAction = ACTION_WARN;
 	else if (StrEqual(sBuffer, "mute"))
- 		iAction = ACTION_MUTE;
+		iAction = ACTION_MUTE;
 	else if (StrEqual(sBuffer, "kick"))
 		iAction = ACTION_KICK;
 	else if (StrEqual(sBuffer, "ban"))
