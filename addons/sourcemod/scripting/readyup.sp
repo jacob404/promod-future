@@ -58,6 +58,7 @@ new Handle:l4d_ready_enable_sound;
 new Handle:l4d_ready_chuckle;
 new Handle:l4d_ready_live_sound;
 new Handle:l4d_ready_warp_team;
+new Handle:l4d_ready_secret_cmd_timer;
 
 // Game Cvars
 new Handle:director_no_specials;
@@ -115,6 +116,7 @@ public OnPluginStart()
 	l4d_ready_live_sound = CreateConVar("l4d_ready_live_sound", "buttons/blip2.wav", "The sound that plays when a round goes live");
 	l4d_ready_chuckle = CreateConVar("l4d_ready_chuckle", "0", "Enable random moustachio chuckle during countdown");
 	l4d_ready_warp_team = CreateConVar("l4d_ready_warp_team", "1", "Should we warp the entire team when a player attempts to leave saferoom?");
+	l4d_ready_secret_cmd_timer = CreateConVar("secret_cmd_timer", "5", "Time delay between triggering the secret command");
 	HookConVarChange(l4d_ready_survivor_freeze, SurvFreezeChange);
 
 	HookEvent("round_start", RoundStart_Event);
@@ -904,6 +906,7 @@ stock DoSecrets(client)
 {
 	if (L4D2Team:GetClientTeam(client) == L4D2Team_Survivor && !blockSecretSpam[client])
 	{
+		new Float:SecretCmdTimer = GetConVarFloat(l4d_ready_secret_cmd_timer);
 		new particle = CreateEntityByName("info_particle_system");
 		decl Float:pos[3];
 		GetClientAbsOrigin(client, pos);
@@ -917,7 +920,7 @@ stock DoSecrets(client)
 		CreateTimer(5.0, killParticle, particle, TIMER_FLAG_NO_MAPCHANGE);
 		EmitSoundToAll("/level/gnomeftw.wav", client, SNDCHAN_AUTO, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.5);
 		CreateTimer(2.5, killSound);
-		CreateTimer(5.0, SecretSpamDelay, client);
+		CreateTimer(SecretCmdTimer, SecretSpamDelay, client);
 		blockSecretSpam[client] = true;
 	}
 	PrintCenterTextAll("\x42\x4f\x4e\x45\x53\x41\x57\x20\x49\x53\x20\x52\x45\x41\x44\x59\x21");
