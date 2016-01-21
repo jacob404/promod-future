@@ -116,7 +116,7 @@ public OnPluginStart()
 	l4d_ready_live_sound = CreateConVar("l4d_ready_live_sound", "buttons/blip2.wav", "The sound that plays when a round goes live");
 	l4d_ready_chuckle = CreateConVar("l4d_ready_chuckle", "0", "Enable random moustachio chuckle during countdown");
 	l4d_ready_warp_team = CreateConVar("l4d_ready_warp_team", "1", "Should we warp the entire team when a player attempts to leave saferoom?");
-	l4d_ready_secret_cmd_timer = CreateConVar("secret_cmd_timer", "5", "Time delay between triggering the secret command");
+	l4d_ready_secret_cmd_timer = CreateConVar("l4d_ready_secret_cmd_timer", "5", "Time delay between triggering the secret command");
 	HookConVarChange(l4d_ready_survivor_freeze, SurvFreezeChange);
 
 	HookEvent("round_start", RoundStart_Event);
