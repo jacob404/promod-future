@@ -53,8 +53,18 @@ for source in sources:
 	output = Popen(build, stdout=PIPE).stdout.read()
 	lines = output.split('\n')
 	if lines[-3] == 'Compilation aborted.':
-		print 'Errors for file {source}:'.format(source=source)
+		print '\tFatal error in file %s' % source
 		if not quiet:
 			for line in lines[3:-4]:
 				print line
-			print '\n'
+	elif 'Error' in lines[-2]:
+		print '\tError in %s' % source
+		if not quiet:
+			for line in lines[3:-3]:
+				print line
+	elif len(lines) > 8:
+		print '\tWarning in %s' % source
+		if not quiet:
+			for line in lines[3:-7]:
+				print line
+
