@@ -55,7 +55,6 @@ new Handle:blockHBSound;
 new Handle:blockProgrammedDialogue;
 new isGhostOffset;
 new Handle:soundHashes;
-new Float:lastJockeySound;
 new Float:lastSurvivorVoiceCommand[2048];
 
 public OnPluginStart()
@@ -159,7 +158,7 @@ public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 			LogMessage("[L4D2SM] SI Ghost Sound blocked.");
 			return Plugin_Changed;
 		}
-	// Programmed dialogue lines are of the form worldc#m#b## (e.g. coach/worldc1m1b01 is "Hey, come back!"
+	// Programmed dialogue lines are of the form worldc#m#b## (e.g. coach/worldc1m1b01 is "Hey, come back!")
 	} else if (GetConVarBool(blockProgrammedDialogue) && StrContains(sample, "worldc")) {
 		LogMessage("[L4D2SM] Programmed Dialogue blocked.");
 		return Plugin_Handled;
@@ -168,7 +167,7 @@ public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 		LogMessage("[L4D2SM] Hunter Callout blocked.");
 		return Plugin_Handled;
 	} else if (StrContains(sample, "jockey/voice") != -1) {
-		EmitRandomSound(jockeySounds, sizeof(jockeySounds), client);
+		EmitRandomSound(jockeySounds, sizeof(jockeySounds), entity);
 		LogMessage("[L4D2SM] Jockey Voice played.");
 		return Plugin_Handled;
 	} else if (StrContains(sample, "survivor\\voice") != -1) { // Too agressive
