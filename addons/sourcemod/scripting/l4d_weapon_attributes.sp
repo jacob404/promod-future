@@ -1,22 +1,22 @@
 /*
-	SourcePawn is Copyright (C) 2006-2015 AlliedModders LLC.  All rights reserved.
-	SourceMod is Copyright (C) 2006-2015 AlliedModders LLC.  All rights reserved.
-	Pawn and SMALL are Copyright (C) 1997-2015 ITB CompuPhase.
-	Source is Copyright (C) Valve Corporation.
-	All trademarks are property of their respective owners.
+    SourcePawn is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
+    SourceMod is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
+    Pawn and SMALL are Copyright (C) 1997-2008 ITB CompuPhase.
+    Source is Copyright (C) Valve Corporation.
+    All trademarks are property of their respective owners.
 
-	This program is free software: you can redistribute it and/or modify it
-	under the terms of the GNU General Public License as published by the
-	Free Software Foundation, either version 3 of the License, or (at your
-	option) any later version.
+    This program is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation, either version 3 of the License, or (at your
+    option) any later version.
 
-	This program is distributed in the hope that it will be useful, but
-	WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	General Public License for more details.
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
-	You should have received a copy of the GNU General Public License along
-	with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License along
+    with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma semicolon 1
 
@@ -30,16 +30,19 @@
 public Plugin:myinfo =
 {
     name        = "L4D2 Weapon Attributes",
-    author      = "Jahze",
-    version     = "1.2",
-    description = "Allowing tweaking of the attributes of all weapons",
+    author      = "Jahze, Stabby",
+    version     = "1.2a",
+    description = "Allowing tweaking of the attributes of all weapons"
     url = "https://github.com/jacob404/Pro-Mod-4.0/releases/latest"
 };
 
-new iWeaponAttributes[MAX_ATTRS] = {
+new L4D2IntWeaponAttributes:iIntWeaponAttributes[3] = {
     L4D2IWA_Damage,
     L4D2IWA_Bullets,
     L4D2IWA_ClipSize,
+};
+
+new L4D2FloatWeaponAttributes:iFloatWeaponAttributes[17] = {
     L4D2FWA_MaxPlayerSpeed,
     L4D2FWA_SpreadPerShot,
     L4D2FWA_MaxSpread,
@@ -55,9 +58,8 @@ new iWeaponAttributes[MAX_ATTRS] = {
     L4D2FWA_Range,
     L4D2FWA_RangeModifier,
     L4D2FWA_CycleTime,
-    L4D2FWA_PelletScatterPitch,
+    L4D2FWA_PelletScatterPitch,     
     L4D2FWA_PelletScatterYaw,
-    -1
 };
 
 new String:sWeaponAttrNames[MAX_ATTRS][32] = {
@@ -72,7 +74,7 @@ new String:sWeaponAttrNames[MAX_ATTRS][32] = {
     "Min standing spread",
     "Min in air spread",
     "Max movement spread",
-    "Penetraion num layers",
+    "Penetration num layers",
     "Penetration power",
     "Penetration max dist",
     "Char penetration max dist",
@@ -111,6 +113,8 @@ new String:sWeaponAttrShortName[MAX_ATTRS][32] = {
 new bool:bLateLoad;
 
 new Handle:hTankDamageKVs;
+new Handle:hWeaponDefaultAttsTrie[MAX_ATTRS];
+new Handle:hWeaponNamesInTrie[MAX_ATTRS];
 
 public APLRes:AskPluginLoad2( Handle:plugin, bool:late, String:error[], errMax ) {
     bLateLoad = late;
@@ -123,8 +127,13 @@ public OnPluginStart() {
 
     hTankDamageKVs = CreateKeyValues("DamageVsTank");
 
+    for ( new i = 0; i < MAX_ATTRS; i++ ) {
+        hWeaponDefaultAttsTrie[i] = INVALID_HANDLE;
+        hWeaponNamesInTrie[i] = INVALID_HANDLE;
+    }
+
     if ( bLateLoad ) {
-        for ( new i = 1; i < MaxClients+1; i++ ) {
+        for ( new i = 1; i <= MaxClients; i++ ) {
             if ( IsClientInGame(i) ) {
                 SDKHook(i, SDKHook_OnTakeDamage, DamageBuffVsTank);
             }
@@ -141,6 +150,26 @@ public OnPluginEnd() {
         CloseHandle(hTankDamageKVs);
         hTankDamageKVs = INVALID_HANDLE;
     }
+
+    decl i, j, String:sWeaponName[32], buf, Float:fub;
+    for ( i = 0; i < 3; i++ ) {
+        if (hWeaponDefaultAttsTrie[i] != INVALID_HANDLE) {
+            for ( j = 0; j < GetArraySize(hWeaponNamesInTrie[i]); j++ ) {
+                GetArrayString(hWeaponNamesInTrie[i], j, sWeaponName, 32);
+                GetTrieValue(hWeaponDefaultAttsTrie[i], sWeaponName, buf);
+                SetWeaponAttributeInt(sWeaponName, i, buf);
+            }
+        }
+    }
+    for ( i = 0; i < MAX_ATTRS - 1; i++ ) {
+        if (hWeaponDefaultAttsTrie[i] != INVALID_HANDLE) {
+            for ( j = 0; j < GetArraySize(hWeaponNamesInTrie[i]); j++ ) {
+                GetArrayString(hWeaponNamesInTrie[i], j, sWeaponName, 32);
+                GetTrieValue(hWeaponDefaultAttsTrie[i], sWeaponName, fub);
+                SetWeaponAttributeFloat(sWeaponName, i, fub);
+            }
+        }
+    }
 }
 
 GetWeaponAttributeIndex( String:sAttrName[128] ) {
@@ -154,19 +183,19 @@ GetWeaponAttributeIndex( String:sAttrName[128] ) {
 }
 
 GetWeaponAttributeInt( const String:sWeaponName[], idx ) {
-    return L4D2_GetIntWeaponAttribute(sWeaponName, iWeaponAttributes[idx]);
+    return L4D2_GetIntWeaponAttribute(sWeaponName, iIntWeaponAttributes[idx]);
 }
 
 Float:GetWeaponAttributeFloat( const String:sWeaponName[], idx ) {
-    return L4D2_GetFloatWeaponAttribute(sWeaponName, iWeaponAttributes[idx]);
+    return L4D2_GetFloatWeaponAttribute(sWeaponName, iFloatWeaponAttributes[idx]);
 }
 
 SetWeaponAttributeInt( const String:sWeaponName[], idx, value ) {
-    L4D2_SetIntWeaponAttribute(sWeaponName, iWeaponAttributes[idx], value);
+    L4D2_SetIntWeaponAttribute(sWeaponName, iIntWeaponAttributes[idx], value);
 }
 
 SetWeaponAttributeFloat( const String:sWeaponName[], idx, Float:value ) {
-    L4D2_SetFloatWeaponAttribute(sWeaponName, iWeaponAttributes[idx], value);
+    L4D2_SetFloatWeaponAttribute(sWeaponName, iFloatWeaponAttributes[idx], value);
 }
 
 public Action:Weapon( args ) {
@@ -203,14 +232,22 @@ public Action:Weapon( args ) {
     StrCat(sWeaponNameFull, sizeof(sWeaponNameFull), "weapon_");
     StrCat(sWeaponNameFull, sizeof(sWeaponNameFull), sWeaponName);
 
+    if (hWeaponDefaultAttsTrie[iAttrIdx] == INVALID_HANDLE) {
+        hWeaponDefaultAttsTrie[iAttrIdx] = CreateTrie();
+        hWeaponNamesInTrie[iAttrIdx] = CreateArray(32);
+    }
+    PushArrayString(hWeaponNamesInTrie[iAttrIdx], sWeaponNameFull);
+
     iValue = StringToInt(sAttrValue);
     fValue = StringToFloat(sAttrValue);
 
     if ( iAttrIdx < 3 ) {
+        SetTrieValue(hWeaponDefaultAttsTrie[iAttrIdx], sWeaponNameFull, GetWeaponAttributeInt(sWeaponNameFull, iAttrIdx), false);
         SetWeaponAttributeInt(sWeaponNameFull, iAttrIdx, iValue);
         PrintToServer("%s for %s set to %d", sWeaponAttrNames[iAttrIdx], sWeaponName, iValue);
     }
-    else if ( iAttrIdx < MAX_ATTRS-1 ) {
+    else if ( (iAttrIdx -= 3) < MAX_ATTRS - 1 ) {
+        SetTrieValue(hWeaponDefaultAttsTrie[iAttrIdx], sWeaponNameFull, GetWeaponAttributeFloat(sWeaponNameFull, iAttrIdx), false);
         SetWeaponAttributeFloat(sWeaponNameFull, iAttrIdx, fValue);
         PrintToServer("%s for %s set to %.2f", sWeaponAttrNames[iAttrIdx], sWeaponName, fValue);
     }
