@@ -2,8 +2,6 @@
 #include <sdkhooks>
 #include <sdktools>
 
-new lastAnimSequence[MAXPLAYERS + 1];
-
 public Plugin:myinfo =
 {
     name = "L4D2 Melee and Shove Shenanigans",

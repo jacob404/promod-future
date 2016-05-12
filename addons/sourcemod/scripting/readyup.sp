@@ -36,7 +36,7 @@ public Plugin:myinfo =
 	name = "L4D2 Ready-Up",
 	author = "CanadaRox",
 	description = "New and improved ready-up plugin.",
-	version = "8.5",
+	version = "8.6",
 	url = "https://github.com/jacob404/Pro-Mod-4.0/releases/latest"
 };
 
@@ -411,7 +411,7 @@ public Action:Secret_Cmd(client, args)
 
 public Action:Ready_Cmd(client, args)
 {
-	if (GetClientTeam(client) == 1) return Plugin_Handled;
+	if (GetClientTeam(client) == 1 && IsClientCaster(client) == false) return Plugin_Handled;
 	if (inReadyUp)
 	{
 		isPlayerReady[client] = true;
@@ -424,7 +424,7 @@ public Action:Ready_Cmd(client, args)
 
 public Action:Unready_Cmd(client, args)
 {
-	if (GetClientTeam(client) == 1) return Plugin_Handled;
+	if (GetClientTeam(client) == 1 && IsClientCaster(client) == false) return Plugin_Handled;
 	if (inReadyUp)
 	{
 		isPlayerReady[client] = false;
@@ -436,7 +436,7 @@ public Action:Unready_Cmd(client, args)
 
 public Action:ToggleReady_Cmd(client, args)
 {
-	if (GetClientTeam(client) == 1) return Plugin_Handled;
+	if (GetClientTeam(client) == 1 && IsClientCaster(client) == false) return Plugin_Handled;
 	if (inReadyUp)
 	{
 		isPlayerReady[client] = !isPlayerReady[client];
@@ -680,7 +680,8 @@ InitiateReadyUp()
 		SetConVarBool(director_no_specials, true);
 	}
 
-	DisableEntities();
+	MakePropsUnbreakable();
+	SetConVarInt(infinite_ammo, 1);
 	SetConVarFlags(god, GetConVarFlags(god) & ~FCVAR_NOTIFY);
 	SetConVarBool(god, true);
 	SetConVarFlags(god, GetConVarFlags(god) | FCVAR_NOTIFY);
@@ -696,7 +697,8 @@ InitiateLive(bool:real = true)
 
 	SetTeamFrozen(L4D2Team_Survivor, false);
 
-	EnableEntities();
+	MakePropsBreakable();
+	SetConVarInt(infinite_ammo, 0);
 	SetConVarBool(director_no_specials, false);
 	SetConVarFlags(god, GetConVarFlags(god) & ~FCVAR_NOTIFY);
 	SetConVarBool(god, false);
@@ -941,35 +943,6 @@ public Action:killSound(Handle:timer)
 	for (new i = 1; i <= MaxClients; i++)
 	if (IsClientInGame(i) && !IsFakeClient(i))
 	StopSound(i, SNDCHAN_AUTO, "/level/gnomeftw.wav");
-}
-
-DisableEntities() {
-  ActivateEntities("prop_door_rotating", "SetUnbreakable");
-  MakePropsUnbreakable();
-  SetConVarInt(infinite_ammo, 1);
-}
-
-EnableEntities() {
-  ActivateEntities("prop_door_rotating", "SetBreakable");
-  MakePropsBreakable();
-  SetConVarInt(infinite_ammo, 0);
-}
-
-
-ActivateEntities(String:className[], String:inputName[]) {
-    new iEntity;
-
-    while ( (iEntity = FindEntityByClassname(iEntity, className)) != -1 ) {
-        if ( !IsValidEdict(iEntity) || !IsValidEntity(iEntity) ) {
-            continue;
-        }
-        // From the VDC, 524288 : Start Unbreakable
-        if (strcmp(inputName, "SetBreakable") == 0 && GetEntityFlags(iEntity) & (1 << 19) == (1 << 19)) {
-	        continue;
-	    }
-
-        AcceptEntityInput(iEntity, inputName);
-    }
 }
 
 MakePropsUnbreakable() {
