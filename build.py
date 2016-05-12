@@ -1,8 +1,11 @@
+#!/usr/bin/env python2
+
 from os import listdir, sep
 from os.path import isdir
 from platform import system as platform
 from subprocess import Popen, PIPE
-from sys import exit
+from sys import exit, argv
+
 versions = listdir('build'+sep+'versions')
 if len(versions) == 0:
 	print 'Found no sourcemod versions!'
@@ -15,12 +18,28 @@ elif len(versions) > 1:
 else:
 	version = versions[0]
 
-for source in listdir('addons'+sep+'sourcemod'+sep+'scripting'):
+# Arguments:
+# -quiet will suppress errors, just inform if error.
+# Usage:
+# build.py file1 (builds addons/sourcemod/scripting/file1)
+# build.py (builds all files in addons/sourcemod/scripting)
+quiet = False
+sources = []
+for arg in argv[1:]:
+	if arg[0] == '-':
+		if arg[1:] == 'quiet':
+			quiet = True
+	else:
+		sources.append(arg)
+if len(sources) == 0:
+	sources = listdir('addons'+sep+'sourcemod'+sep+'scripting')
+for source in sources:
 	if isdir(source):
 		continue
 	elif source == '.DS_Store':
 		continue
-	source = source[:-3] # Remove .sp
+	if source[-3:] == '.sp':
+		source = source[:-3]
 	build = ['./build/versions/{version}/{system}/spcomp'.format(version=version, system=platform()),
 		'addons/sourcemod/scripting/{source}.sp'.format(source=source),
 		'-o=build/compiled/{source}.smx'.format(source=source),
@@ -34,6 +53,18 @@ for source in listdir('addons'+sep+'sourcemod'+sep+'scripting'):
 	output = Popen(build, stdout=PIPE).stdout.read()
 	lines = output.split('\n')
 	if lines[-3] == 'Compilation aborted.':
-		print '\nErrors for file {source}:'.format(source=source)
-		for line in lines[3:-4]:
-			print line
+		print '\tFatal error in file %s' % source
+		if not quiet:
+			for line in lines[3:-4]:
+				print line
+	elif 'Error' in lines[-2]:
+		print '\tError in %s' % source
+		if not quiet:
+			for line in lines[3:-3]:
+				print line
+	elif len(lines) > 8:
+		print '\tWarning in %s' % source
+		if not quiet:
+			for line in lines[3:-7]:
+				print line
+

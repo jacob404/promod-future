@@ -52,14 +52,15 @@ new const String:jockeySounds[10][] =
 };
 
 new Handle:blockHBSound;
+new Handle:blockProgrammedDialogue;
 new isGhostOffset;
 new Handle:soundHashes;
-new Float:lastJockeySound;
 new Float:lastSurvivorVoiceCommand[2048];
 
 public OnPluginStart()
 {
 	blockHBSound = CreateConVar("sound_block_heartbeat", "0", "Block the Heartbeat Sound, very useful for 1v1 matchmodes");
+	blockProgrammedDialogue = CreateConVar("block_programmed_dialogue", "1", "Block the stories & such at the start of maps.");
 
 	soundHashes = CreateArray();
 
@@ -72,9 +73,11 @@ public OnPluginStart()
 	AddNormalSoundHook(NormalSHook:SoundHook);
 	// Used to block CCs from being played
 	HookUserMessage(GetUserMessageId("CloseCaption"), CloseCaptionHook, true);
+	LogMessage("[L4D2SM] OnPluginStart");
 }
 
 public OnMapStart() {
+	LogMessage("[L4D2SM] OnMapStart");
 	PreloadSounds(jockeySounds, sizeof(jockeySounds));
 }
 
@@ -86,6 +89,7 @@ PreloadSounds(const String:sounds[][], size) {
 		// new hash = Hash(sounds[i]);
 		// PushArrayCell(soundHashes, hash);
 	}
+	LogMessage("[L4D2SM] Preloaded jockey sounds");
 	if (GetArraySize(soundHashes) > 0) return;
 	// Coach
 	PushArrayCell(soundHashes, -1789308882);
@@ -117,25 +121,29 @@ PreloadSounds(const String:sounds[][], size) {
 	PushArrayCell(soundHashes, -2008231496);
 	PushArrayCell(soundHashes, -11804370);
 	PushArrayCell(soundHashes, 1715646612);
+	LogMessage("[L4D2SM] Preloaded hunter sounds");
 }
 
 public Action:PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (client <= 0 || client > MaxClients) return;
 	if (!IsClientInGame(client)) return;
-	if (GetGameTime() - lastJockeySound < 0.1) return;
-	lastJockeySound = GetGameTime();
+	if (GetClientTeam(client) != 3) return;
+	if (GetEntProp(client, Prop_Send, "m_zombieClass") != 5) return;
+	LogMessage("[L4D2SM] Jockey Spawned.");
 	EmitRandomSound(jockeySounds, sizeof(jockeySounds), client);
 }
 
 EmitRandomSound(const String:sounds[][], size, client) {
 	new rand = GetRandomInt(0, size);
+	LogMessage("[L4D2SM] Random: %d", rand);
 	EmitSoundToAll(sounds[rand], client, SNDCHAN_VOICE);
 }
 
 public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity) {
 	if (StrEqual(sample, "player/heartbeatloop.wav")) {
 		if (GetConVarBool(blockHBSound)) {
+			LogMessage("[L4D2SM] HB Blocked.");
 			return Plugin_Handled;
 		}
 	} else if (StrEqual(sample, "player/jumplanding_zombie.wav")) {
@@ -144,37 +152,33 @@ public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 			for (new client=1; client<=MaxClients; client++) {
 				if (!IsClientInGame(client)) continue;
 				if (IsFakeClient(client)) continue;
-				if (GetClientTeam(client) == 2) {
-					clients[numClients++] = client;
-				}
+				if (GetClientTeam(client) != 3) continue;
+				clients[numClients++] = client;
 			}
+			LogMessage("[L4D2SM] SI Ghost Sound blocked.");
 			return Plugin_Changed;
 		}
+	// Programmed dialogue lines are of the form worldc#m#b## (e.g. coach/worldc1m1b01 is "Hey, come back!")
+	} else if (GetConVarBool(blockProgrammedDialogue) && StrContains(sample, "worldc")) {
+		LogMessage("[L4D2SM] Programmed Dialogue blocked.");
+		return Plugin_Handled;
 	} else if (StrContains(sample, "WarnHunter") != -1) {
 		// These are the hunter callouts. They can be called before the hunter starts crouching, which is bad.
+		LogMessage("[L4D2SM] Hunter Callout blocked.");
 		return Plugin_Handled;
 	} else if (StrContains(sample, "jockey/voice") != -1) {
-		// Don't spam jockey sounds.
-		if (GetGameTime() - lastJockeySound < 0.1) {
-			return Plugin_Handled;
-		} else {
-			lastJockeySound = GetGameTime();
-		}
-		numClients = 0;
-		for (new client=1; client<=MaxClients; client++) {
-			if (!IsClientInGame(client)) continue;
-			if (IsFakeClient(client)) continue;
-			// Play this sound to all real, non-bot clients.
-			clients[numClients++] = client;
-		}
-		return Plugin_Changed;
-	} else if (StrContains(sample, "survivor\\voice") != -1) {
+		EmitRandomSound(jockeySounds, sizeof(jockeySounds), entity);
+		LogMessage("[L4D2SM] Jockey Voice played.");
+		return Plugin_Handled;
+	} else if (StrContains(sample, "survivor\\voice") != -1) { // Too agressive
+		/*
 		if (!IsClientInGame(entity)) return Plugin_Continue;
 		if (GetGameTime() - lastSurvivorVoiceCommand[entity] < 1.0) {
+			LogMessage("[L4D2SM] Survivor Voice spam blocked.");
 			return Plugin_Handled;
 		} else {
 			lastSurvivorVoiceCommand[entity] = GetGameTime();
-		}
+		}*/
 	}
 	return Plugin_Continue;
 }
@@ -182,6 +186,7 @@ public Action:SoundHook(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 public Action:CloseCaptionHook(UserMsg:msg_id, Handle:msg, const players[], playersNum, bool:reliable, bool:init) {
 	new hash = BfReadNum(msg);
 	if (FindValueInArray(soundHashes, hash) != -1) return Plugin_Handled;
+	LogMessage("[L4D2SM] Hunter Callout CC blocked.");
 	return Plugin_Continue;
 }
 
