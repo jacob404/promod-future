@@ -40,48 +40,38 @@ public Plugin:myinfo =
     url = "github.com/jacob404/myplugins"
 }
 
-public OnMapStart()
-{
+public OnMapStart(){
     decl String:mapname[64];
     GetCurrentMap(mapname, sizeof(mapname));
-    if(StrEqual(mapname, "c8m3_sewers"))
-    {
+    if(StrEqual(mapname, "c8m3_sewers")){
         g_bIsSewers = true;
     }
-    else
-    {
+    else{
         g_bIsSewers = false;
     }
 }
 
-public OnClientPostAdminCheck(client)
-{
+public OnClientPostAdminCheck(client){
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
-public OnClientDisconnect(client)
-{
+public OnClientDisconnect(client){
 	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 }
 
-public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype)
-{
+public Action:OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype){
 	new iPounceVictim = GetEntProp(victim, Prop_Send, "m_pounceAttacker");
 	new iJockeyVictim = GetEntProp(victim, Prop_Send, "m_jockeyAttacker");
 	
 	if(iPounceVictim <= 0 && iJockeyVictim <= 0) {
 		return Plugin_Continue;
 	}
-	
 	if(!g_bIsSewers){
 		return Plugin_Continue;
 	}
-	
-	if(IS_VALID_SURVIVOR(victim) && damage > 30.0 && damagetype == DMG_FALL)
-	{
+	if(IS_VALID_SURVIVOR(victim) && damage > 30.0 && damagetype == DMG_FALL){
 		damage = 30.0;
 		return Plugin_Changed;
 	}
-	
 	return Plugin_Continue;
 }
